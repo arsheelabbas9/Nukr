@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Coupons | Nukڑ.{% endblock %}
+
+{% block content %}
+
+<style>
+    :root {
+        --ti-navy: #0f172a;
+        --ti-navy-light: #1e293b;
+        --ti-blue: #3b82f6;
+        --ti-green: #10b981;
+        --ti-red: #ef4444;
+        --ti-bg: #f8fafc;
+        --ti-border: #e2e8f0;
+        --ti-text: #334155;
+        --ti-text-muted: #64748b;
+    }
+
+    body { background-color: var(--ti-bg); font-family: 'Inter', sans-serif; }
+
+    .manage-wrapper {
+        max-width: 1200px; margin: 40px auto; padding: 0 20px 80px;
+    }
+
+    /* --- 1. HEADER --- */
+    .page-header {
+        display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;
+    }
+    .page-title { font-size: 1.8rem; font-weight: 800; color: var(--ti-navy); margin: 0; letter-spacing: -0.5px; }
+    .page-subtitle { margin: 5px 0 0; color: var(--ti-text-muted); font-size: 0.95rem; }
+    
+    .btn-back {
+        text-decoration: none; color: var(--ti-text); font-weight: 700;
+        background: white; padding: 10px 18px; border-radius: 10px;
+        border: 1px solid var(--ti-border); transition: 0.2s;
+        display: flex; align-items: center; gap: 6px; font-size: 0.9rem;
+    }
+    .btn-back:hover { border-color: var(--ti-navy); color: var(--ti-navy); }
+
+    /* --- 2. LAYOUT GRID --- */
+    .coupon-grid {
+        display: grid; grid-template-columns: 1fr 1.4fr; gap: 40px; align-items: start;
+    }
+
+    /* --- 3. CREATOR CARD (LEFT) --- */
+    .creator-card {
+        background: white; border-radius: 20px;
+        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
+        border: 1px solid var(--ti-border); overflow: hidden;
+        position: sticky; top: 30px;
+    }
+
+    .card-head {
+        background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+        padding: 30px; text-align: center; color: white;
+    }
+    .head-icon { font-size: 2rem; margin-bottom: 10px; display: block; }
+    .head-title { font-weight: 800; font-size: 1.2rem; margin: 0; }
+
+    .card-body { padding: 30px; }
+
+    .form-group { margin-bottom: 20px; }
+    .form-label { display: block; font-weight: 700; color: var(--ti-navy); margin-bottom: 8px; font-size: 0.9rem; }
+    
+    .ti-input, select, input[type="text"], input[type="number"], input[type="date"] {
+        width: 100%; padding: 12px 16px; border-radius: 10px;
+        border: 2px solid var(--ti-border); background: #f8fafc;
+        font-size: 1rem; color: var(--ti-navy); transition: 0.2s;
+        box-sizing: border-box; outline: none;
+    }
+    .ti-input:focus, select:focus, input:focus {
+        background: white; border-color: var(--ti-blue);
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+
+    .helper-text { font-size: 0.8rem; color: var(--ti-text-muted); margin-top: 5px; }
+
+    .row-split { display: flex; gap: 15px; }
+
+    /* Toggle Switch */
+    .toggle-wrapper {
+        display: flex; align-items: center; justify-content: space-between;
+        background: #f0fdf4; padding: 15px; border-radius: 10px;
+        border: 1px solid #bbf7d0; cursor: pointer;
+    }
+    .toggle-text { font-weight: 700; color: var(--ti-green); font-size: 0.9rem; }
+    input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--ti-green); cursor: pointer; }
+
+    .btn-create {
+        width: 100%; background: var(--ti-navy); color: white;
+        padding: 16px; border-radius: 12px; font-weight: 800; border: none;
+        cursor: pointer; font-size: 1rem; margin-top: 10px; transition: 0.2s;
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.2);
+    }
+    .btn-create:hover { background: var(--ti-navy-light); transform: translateY(-2px); }
+
+    /* --- 4. COUPON LIST (RIGHT) --- */
+    .coupon-list-title {
+        font-size: 1.1rem; font-weight: 800; color: var(--ti-navy); 
+        margin-bottom: 20px; display: flex; align-items: center; gap: 10px;
+    }
+    .count-badge {
+        background: #eff6ff; color: var(--ti-blue); padding: 4px 10px;
+        border-radius: 20px; font-size: 0.75rem; font-weight: 700;
+    }
+
+    /* Ticket Style Card */
+    .coupon-ticket {
+        background: white; border-radius: 16px; display: flex;
+        border: 1px solid var(--ti-border); margin-bottom: 20px;
+        overflow: hidden; transition: 0.2s; position: relative;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    }
+    .coupon-ticket:hover { transform: translateY(-3px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.1); border-color: var(--ti-blue); }
+
+    /* Left Stub (Info) */
+    .ticket-info { 
+        padding: 25px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; 
+    }
+    
+    .c-code { 
+        font-family: monospace; font-size: 1.3rem; font-weight: 800; 
+        color: var(--ti-navy); letter-spacing: 1px; margin-bottom: 5px;
+        display: flex; align-items: center; gap: 10px;
+    }
+    
+    .c-value { font-size: 1rem; font-weight: 700; color: var(--ti-green); margin-bottom: 8px; }
+    
+    .c-meta { display: flex; gap: 15px; font-size: 0.8rem; color: var(--ti-text-muted); font-weight: 500; }
+
+    /* Status Badge */
+    .status-badge {
+        font-size: 0.65rem; padding: 3px 8px; border-radius: 20px; 
+        text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;
+    }
+    .st-active { background: #ecfdf5; color: var(--ti-green); border: 1px solid #bbf7d0; }
+    .st-inactive { background: #fef2f2; color: var(--ti-red); border: 1px solid #fecaca; }
+
+    /* Right Action (Stub) */
+    .ticket-action {
+        width: 70px; border-left: 2px dashed var(--ti-border);
+        display: flex; align-items: center; justify-content: center;
+        background: #f8fafc; position: relative;
+    }
+    /* Ticket notches */
+    .ticket-action::before, .ticket-action::after {
+        content: ''; position: absolute; left: -10px; width: 20px; height: 20px;
+        background: var(--ti-bg); border-radius: 50%; border: 1px solid var(--ti-border);
+    }
+    .ticket-action::before { top: -11px; border-bottom-color: transparent; border-left-color: transparent; }
+    .ticket-action::after { bottom: -11px; border-top-color: transparent; border-left-color: transparent; }
+
+    .btn-delete {
+        width: 36px; height: 36px; border-radius: 50%; border: 1px solid #fecaca;
+        background: white; color: var(--ti-red); display: flex; 
+        align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;
+    }
+    .btn-delete:hover { background: #fef2f2; transform: scale(1.1); }
+
+    /* Empty State */
+    .empty-coupons {
+        text-align: center; padding: 60px 20px;
+        border: 2px dashed var(--ti-border); border-radius: 16px;
+        color: var(--ti-text-muted);
+    }
+
+    @media (max-width: 900px) {
+        .coupon-grid { grid-template-columns: 1fr; }
+        .creator-card { position: static; order: -1; margin-bottom: 40px; }
+    }
+</style>
+
+<div class="manage-wrapper">
+    
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Manage Coupons</h1>
+            <p class="page-subtitle">Create discounts to boost sales for {{ store.name }}.</p>
+        </div>
+        <a href="{% url 'store_dashboard' store.id %}" class="btn-back">
+            <span>&larr;</span> Dashboard
+        </a>
+    </div>
+
+    <div class="coupon-grid">
+        
+        <div class="creator-card">
+            <div class="card-head">
+                <span class="head-icon">🎟️</span>
+                <h3 class="head-title">Create New Coupon</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label class="form-label">Coupon Code</label>
+                        {{ form.code }}
+                        <div class="helper-text">Uppercase only (e.g. SUMMER50)</div>
+                    </div>
+
+                    <div class="row-split">
+                        <div class="form-group" style="flex:1;">
+                            <label class="form-label">Type</label>
+                            {{ form.discount_type }}
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label class="form-label">Value</label>
+                            {{ form.value }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Valid Until (Optional)</label>
+                        {{ form.valid_until }}
+                        <div class="helper-text">Leave blank for no expiry</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="toggle-wrapper">
+                            <span class="toggle-text">Active Immediately</span>
+                            {{ form.active }}
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn-create">Create Coupon</button>
+                </form>
+            </div>
+        </div>
+
+        <div>
+            <div class="coupon-list-title">
+                Active Campaigns <span class="count-badge">{{ store.discounts.count }}</span>
+            </div>
+
+            {% if store.discounts.exists %}
+                {% for coupon in store.discounts.all %}
+                    <div class="coupon-ticket">
+                        <div class="ticket-info">
+                            <div class="c-code">
+                                {{ coupon.code }}
+                                {% if coupon.active %}
+                                    <span class="status-badge st-active">Active</span>
+                                {% else %}
+                                    <span class="status-badge st-inactive">Inactive</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="c-value">
+                                {% if coupon.discount_type == 'PERCENT' %}
+                                    {{ coupon.value }}% OFF
+                                {% else %}
+                                    Rs. {{ coupon.value }} OFF
+                                {% endif %}
+                            </div>
+
+                            <div class="c-meta">
+                                <span>Expires: {{ coupon.valid_until|date:"M d, Y"|default:"Never" }}</span>
+                            </div>
+                        </div>
+
+                        <div class="ticket-action">
+                            <form method="POST" action="{% url 'delete_coupon' coupon.id %}" onsubmit="return confirm('Delete this coupon? users wont be able to use it anymore.');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-delete" title="Delete Coupon">
+                                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-coupons">
+                    <div style="font-size:3rem; margin-bottom:15px; opacity:0.3;">🎫</div>
+                    <h3 style="color:var(--ti-navy); margin:0 0 5px;">No coupons found</h3>
+                    <p>Create your first discount code to boost sales.</p>
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // 🛡️ Auto-Style Django Widgets
+    document.addEventListener("DOMContentLoaded", function() {
+        // Apply styling to standard inputs
+        const inputs = document.querySelectorAll('input[type="text"], input[type="number"], input[type="date"], select');
+        inputs.forEach(el => {
+            if(!el.classList.contains('ti-input')) el.classList.add('ti-input');
+        });
+        
+        // Remove style from checkbox to prevent visual bugs
+        const checks = document.querySelectorAll('input[type="checkbox"]');
+        checks.forEach(el => el.classList.remove('ti-input'));
+    });
+</script>
+
+{% endblock %}

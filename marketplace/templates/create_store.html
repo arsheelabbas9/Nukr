@@ -1,0 +1,370 @@
+{% extends 'base.html' %}
+
+{% block title %}Launch Store | Nukr.{% endblock %}
+
+{% block content %}
+
+<style>
+    :root {
+        --ti-navy: #0f172a;
+        --ti-navy-light: #1e293b;
+        --ti-blue: #3b82f6;
+        --ti-green: #10b981;
+        --ti-red: #ef4444;
+        --ti-bg: #f8fafc;
+        --ti-border: #e2e8f0;
+        --ti-text: #334155;
+        --ti-text-muted: #64748b;
+    }
+
+    body { background-color: var(--ti-bg); font-family: 'Inter', sans-serif; }
+
+    .onboarding-wrapper {
+        min-height: 85vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+
+    /* Card */
+    .ti-card {
+        background: white; border-radius: 24px;
+        width: 100%; max-width: 750px;
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
+        border: 1px solid var(--ti-border);
+        overflow: hidden;
+    }
+
+    /* Header */
+    .card-header {
+        background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+        padding: 40px; text-align: center; color: white;
+        position: relative;
+    }
+    .card-header::after {
+        content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background-image: radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px);
+        background-size: 20px 20px; opacity: 0.3; pointer-events: none;
+    }
+    
+    .header-title { font-size: 2.2rem; font-weight: 800; margin: 0; letter-spacing: -1px; position: relative; z-index: 2; }
+    .header-sub { opacity: 0.8; margin: 8px 0 0; font-size: 1.1rem; position: relative; z-index: 2; }
+
+    /* Body */
+    .card-body { padding: 40px; }
+
+    /* Forms */
+    .form-section { margin-bottom: 35px; border-bottom: 1px solid var(--ti-bg); padding-bottom: 25px; }
+    .form-section:last-child { border-bottom: none; }
+    
+    .section-title {
+        font-size: 1.1rem; font-weight: 800; color: var(--ti-navy);
+        margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
+    }
+
+    .form-group { margin-bottom: 20px; }
+    .form-label { display: block; font-weight: 700; color: var(--ti-text); margin-bottom: 8px; font-size: 0.95rem; }
+    .required { color: var(--ti-red); margin-left: 2px; }
+    
+    .ti-input, select, textarea, input[type="text"], input[type="number"] {
+        width: 100%; padding: 14px 18px; border-radius: 12px;
+        border: 2px solid var(--ti-border); background: #f8fafc;
+        font-size: 1rem; color: var(--ti-navy); transition: 0.2s;
+        box-sizing: border-box; outline: none;
+    }
+    .ti-input:focus, select:focus, textarea:focus, input:focus {
+        background: white; border-color: var(--ti-blue);
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+
+    .row-split { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .helper-text { font-size: 0.85rem; color: var(--ti-text-muted); margin-top: 6px; }
+    .error-msg { color: var(--ti-red); font-size: 0.85rem; margin-top: 5px; font-weight: 600; }
+
+    /* Special Elements */
+    .drop-zone {
+        border: 2px dashed #cbd5e1; border-radius: 16px;
+        padding: 20px; text-align: center; background: #f8fafc;
+        transition: 0.2s; cursor: pointer;
+    }
+    .drop-zone:hover { border-color: var(--ti-blue); background: #eff6ff; }
+    
+    input[type="file"]::file-selector-button {
+        padding: 8px 16px; border-radius: 8px; background: var(--ti-navy);
+        color: white; font-weight: 700; border: none; margin-right: 15px;
+        cursor: pointer; transition: 0.2s;
+    }
+    input[type="file"]::file-selector-button:hover { background: var(--ti-navy-light); }
+
+    /* Logic Toggles */
+    .toggle-wrapper {
+        display: flex; align-items: center; justify-content: space-between;
+        background: white; border: 2px solid var(--ti-border); padding: 15px; border-radius: 12px;
+        cursor: pointer; transition: 0.2s; font-weight: 600; color: var(--ti-navy);
+    }
+    .toggle-wrapper:hover { border-color: #cbd5e1; }
+    .toggle-wrapper.active { border-color: var(--ti-blue); background: #eff6ff; color: var(--ti-blue); }
+
+    .dynamic-box {
+        background: #f8fafc; border: 1px solid var(--ti-border); border-radius: 16px; padding: 25px;
+        margin-top: 15px; display: none; animation: fadeIn 0.3s ease-out;
+    }
+
+    .checkbox-wrapper {
+        display: flex; align-items: center; gap: 12px; cursor: pointer;
+        padding: 15px; border: 1px solid var(--ti-border); border-radius: 12px;
+        background: white; transition: 0.2s;
+    }
+    .checkbox-wrapper:hover { border-color: var(--ti-navy); }
+    input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--ti-blue); cursor: pointer; }
+
+    /* City Rows */
+    .city-row { display: flex; gap: 10px; margin-bottom: 10px; }
+    .btn-remove { 
+        background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; 
+        padding: 0 15px; border-radius: 10px; cursor: pointer; font-weight: 700; 
+    }
+    .btn-add-row { 
+        background: var(--ti-navy); color: white; border: none; 
+        padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem; margin-top: 5px; 
+    }
+
+    /* Submit */
+    .btn-submit {
+        width: 100%; background: var(--ti-blue); color: white; padding: 18px; border: none; border-radius: 12px;
+        font-weight: 800; font-size: 1.1rem; cursor: pointer; transition: 0.2s; margin-top: 10px;
+        box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+    }
+    .btn-submit:hover { background: #1d4ed8; transform: translateY(-2px); }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 600px) { .row-split { grid-template-columns: 1fr; } }
+</style>
+
+<div class="onboarding-wrapper">
+    <div class="ti-card">
+        
+        <div class="card-header">
+            <h1 class="header-title">Launch Your Store</h1>
+            <p class="header-sub">Setup your digital storefront in minutes.</p>
+        </div>
+
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" id="storeForm">
+                {% csrf_token %}
+
+                <div class="form-section">
+                    <h3 class="section-title">Store Identity</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Store Name <span class="required">*</span></label>
+                        {{ form.name }}
+                        {% if form.name.errors %}<div class="error-msg">{{ form.name.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Logo</label>
+                        <div class="drop-zone">
+                            {{ form.image }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        {{ form.description }}
+                        <div class="helper-text">Tell customers what you sell.</div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">Location & Delivery</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Primary City <span class="required">*</span></label>
+                        {{ form.city }}
+                    </div>
+
+                    <div class="row-split">
+                        <div class="form-group">
+                            <label class="form-label">Est. Delivery Time <span class="required">*</span></label>
+                            {{ form.delivery_time }}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Delivery Fee (Rs) <span class="required">*</span></label>
+                            {{ form.delivery_charges }}
+                            <div class="helper-text">Enter 0 for Free Delivery</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Do you operate in other cities?</label>
+                        <div class="toggle-wrapper" id="otherCitiesToggle">
+                            <span>Yes, I deliver elsewhere too</span>
+                            <span style="font-size:1.2rem;">+</span>
+                        </div>
+                    </div>
+
+                    <div id="delivery-options-box" class="dynamic-box">
+                        <div style="margin-bottom: 20px;">
+                            <label class="checkbox-wrapper">
+                                {{ form.deliver_nationwide }}
+                                <span style="font-weight:700; color:var(--ti-navy);">Deliver Across Pakistan 🇵🇰</span>
+                            </label>
+                            <p class="helper-text" style="margin-left:15px;">Check this if you courier to all cities.</p>
+                        </div>
+
+                        <div id="specific-cities-section">
+                            <label class="form-label">Or select specific cities:</label>
+                            <div id="cities-container"></div>
+                            <button type="button" class="btn-add-row" onclick="addCityRow()">+ Add Another City</button>
+                        </div>
+                    </div>
+                    
+                    {{ form.secondary_cities }} 
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">Store Policies</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Return & Privacy Policy</label>
+                        <textarea name="policy" class="ti-input" rows="5" placeholder="Example: We offer a 7-day return policy for defective items. Please contact us via WhatsApp for returns."></textarea>
+                        <div class="helper-text">Build trust by stating your return rules clearly. You can edit this later.</div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">Payments</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Preferred Method <span class="required">*</span></label>
+                        {{ form.payment_method }}
+                        {% if form.payment_method.errors %}<div class="error-msg">{{ form.payment_method.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div id="bank-details-section" class="dynamic-box">
+                        <h4 style="margin:0 0 15px 0; color:var(--ti-navy);">🏦 Bank Details Required</h4>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Bank Name</label>
+                            {{ form.bank_name }}
+                            {% if form.bank_name.errors %}<div class="error-msg">{{ form.bank_name.errors.0 }}</div>{% endif %}
+                        </div>
+                        
+                        <div class="row-split">
+                            <div class="form-group">
+                                <label class="form-label">Account Title</label>
+                                {{ form.payment_account_title }}
+                                {% if form.payment_account_title.errors %}<div class="error-msg">{{ form.payment_account_title.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">IBAN / Account No.</label>
+                                {{ form.payment_account_number }}
+                                {% if form.payment_account_number.errors %}<div class="error-msg">{{ form.payment_account_number.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">Social Media <span style="font-weight:400; color:var(--ti-text-muted); font-size:0.9rem; margin-left:auto;">(Optional)</span></h3>
+                    <div class="row-split">
+                        <div class="form-group">
+                            <label class="form-label">Facebook Link</label>
+                            {{ form.facebook_link }}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Instagram Link</label>
+                            {{ form.instagram_link }}
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">Launch Store </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<template id="city-row-template">
+    <div class="city-row">
+        <select class="ti-input secondary-city-select">
+            <option value="" selected disabled>Select City...</option>
+            {% for code, name in form.fields.city.choices %}
+                <option value="{{ code }}">{{ name }}</option>
+            {% endfor %}
+        </select>
+        <button type="button" class="btn-remove" onclick="this.parentElement.remove()">✕</button>
+    </div>
+</template>
+
+<script>
+    // 1. Auto-Style Django Widgets
+    document.addEventListener("DOMContentLoaded", function() {
+        const inputs = document.querySelectorAll('input[type="text"], input[type="number"], select, textarea');
+        inputs.forEach(el => {
+            if(!el.classList.contains('ti-input') && !el.classList.contains('secondary-city-select')) {
+                el.classList.add('ti-input');
+            }
+        });
+    });
+
+    // 2. City Logic
+    const toggleBtn = document.getElementById('otherCitiesToggle');
+    const deliveryBox = document.getElementById('delivery-options-box');
+    const nationwideCheck = document.getElementById('id_deliver_nationwide');
+    const specificCitiesSection = document.getElementById('specific-cities-section');
+    const secondaryCitiesInput = document.getElementById('id_secondary_cities');
+
+    toggleBtn.addEventListener('click', () => {
+        const isHidden = deliveryBox.style.display === 'none' || deliveryBox.style.display === '';
+        deliveryBox.style.display = isHidden ? 'block' : 'none';
+        toggleBtn.classList.toggle('active');
+    });
+
+    nationwideCheck.addEventListener('change', () => {
+        if (nationwideCheck.checked) {
+            specificCitiesSection.style.opacity = '0.5';
+            specificCitiesSection.style.pointerEvents = 'none';
+        } else {
+            specificCitiesSection.style.opacity = '1';
+            specificCitiesSection.style.pointerEvents = 'auto';
+        }
+    });
+
+    function addCityRow() {
+        const container = document.getElementById('cities-container');
+        const template = document.getElementById('city-row-template');
+        const clone = template.content.cloneNode(true);
+        container.appendChild(clone);
+    }
+
+    // 3. Payment Logic
+    const paymentDropdown = document.getElementById('id_payment_method');
+    const bankSection = document.getElementById('bank-details-section');
+
+    function toggleBankDetails() {
+        const val = paymentDropdown.value;
+        if (val === 'OL' || val === 'BOTH') {
+            bankSection.style.display = 'block';
+        } else {
+            bankSection.style.display = 'none';
+        }
+    }
+    paymentDropdown.addEventListener('change', toggleBankDetails);
+    toggleBankDetails(); // Init
+
+    // 4. Form Submission
+    document.getElementById('storeForm').addEventListener('submit', function(e) {
+        // Collect secondary cities
+        const selects = document.querySelectorAll('.secondary-city-select');
+        let cities = [];
+        selects.forEach(sel => {
+            if (sel.value) cities.push(sel.value);
+        });
+        secondaryCitiesInput.value = cities.join(',');
+    });
+</script>
+
+{% endblock %}

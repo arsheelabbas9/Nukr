@@ -1,0 +1,6 @@
+echo ".env" >> .gitignore
+echo "__pycache__/" >> .gitignore
+echo "db.sqlite3" >> .gitignore
+echo "staticfiles/" >> .gitignore
+secrets.toml
+.env

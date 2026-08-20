@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if form.instance.pk %}Edit Collection{% else %}New Collection{% endif %} | Nukڑ.
+{% endblock %}
+
+{% block content %}
+
+<style>
+    :root {
+        --ti-navy: #0f172a;
+        --ti-navy-light: #1e293b;
+        --ti-blue: #3b82f6;
+        --ti-bg: #f8fafc;
+        --ti-border: #e2e8f0;
+        --ti-text: #334155;
+        --ti-text-muted: #64748b;
+    }
+
+    body { background-color: var(--ti-bg); font-family: 'Inter', sans-serif; }
+
+    .form-wrapper {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+
+    /* Card Styling */
+    .ti-card {
+        background: white; border-radius: 24px;
+        width: 100%; max-width: 550px;
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
+        border: 1px solid var(--ti-border);
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+        padding: 40px 30px; text-align: center; color: white;
+        position: relative;
+    }
+    
+    /* Header Pattern */
+    .card-header::after {
+        content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background-image: radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px);
+        background-size: 20px 20px; opacity: 0.3; pointer-events: none;
+    }
+    
+    .header-title { font-size: 1.8rem; font-weight: 800; margin: 0; letter-spacing: -0.5px; position: relative; z-index: 2; }
+    .header-sub { opacity: 0.7; margin: 5px 0 0; font-size: 0.95rem; position: relative; z-index: 2; }
+
+    .card-body { padding: 40px 35px; }
+
+    /* Inputs */
+    .form-group { margin-bottom: 25px; }
+    .form-label { display: block; font-weight: 700; color: var(--ti-navy); margin-bottom: 8px; font-size: 0.95rem; }
+    
+    .ti-input, input[type="text"] {
+        width: 100%; padding: 14px 18px; border-radius: 12px;
+        border: 2px solid var(--ti-border); background: #f8fafc;
+        font-size: 1rem; color: var(--ti-navy); transition: 0.2s;
+        box-sizing: border-box; outline: none;
+    }
+    .ti-input:focus, input[type="text"]:focus {
+        background: white; border-color: var(--ti-navy);
+        box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.1);
+    }
+
+    /* Image Drop Zone */
+    .drop-zone {
+        border: 2px dashed #cbd5e1; border-radius: 16px;
+        padding: 25px; text-align: center; background: #f8fafc;
+        transition: 0.2s; cursor: pointer; position: relative;
+    }
+    .drop-zone:hover { border-color: var(--ti-blue); background: #eff6ff; }
+    
+    /* File Button Styling */
+    input[type="file"]::file-selector-button {
+        padding: 8px 16px; border-radius: 8px; background: var(--ti-navy);
+        color: white; font-weight: 700; border: none; margin-right: 15px;
+        cursor: pointer; transition: 0.2s; font-size: 0.85rem;
+    }
+    input[type="file"]::file-selector-button:hover { background: var(--ti-navy-light); }
+
+    /* Preview Image */
+    .current-img {
+        width: 100%; height: 160px; object-fit: cover; border-radius: 12px;
+        margin-bottom: 15px; border: 1px solid var(--ti-border);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    /* Buttons */
+    .btn-save {
+        width: 100%; background: var(--ti-navy); color: white;
+        padding: 16px; border-radius: 12px; font-weight: 800; border: none;
+        cursor: pointer; font-size: 1rem; transition: 0.2s;
+        box-shadow: 0 10px 20px rgba(15, 23, 42, 0.2); margin-top: 10px;
+    }
+    .btn-save:hover { background: var(--ti-navy-light); transform: translateY(-2px); }
+
+    .btn-cancel {
+        display: block; text-align: center; margin-top: 20px;
+        color: var(--ti-text-muted); font-weight: 600; text-decoration: none;
+        font-size: 0.9rem; transition: 0.2s;
+    }
+    .btn-cancel:hover { color: var(--ti-navy); }
+</style>
+
+<div class="form-wrapper">
+    <div class="ti-card">
+        
+        <div class="card-header">
+            <h1 class="header-title">
+                {% if form.instance.pk %}Edit Collection{% else %}Create Collection{% endif %}
+            </h1>
+            <p class="header-sub">Group your products (e.g. "Winter Sale", "Gadgets")</p>
+        </div>
+
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label class="form-label">Collection Name</label>
+                    {{ form.name }}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Cover Image (Optional)</label>
+                    <div class="drop-zone">
+                        {% if form.instance.image %}
+                            <img src="{{ form.instance.image.url }}" class="current-img">
+                            <div style="font-size:0.8rem; color:#64748b; margin-bottom:10px; font-weight:600;">Replace Image:</div>
+                        {% endif %}
+                        
+                        {{ form.image }}
+                        
+                        {% if not form.instance.image %}
+                            <div style="margin-top:10px; font-size:0.8rem; color:#94a3b8;">
+                                Recommended: 800x400px (JPG/PNG)
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-save">
+                    {% if form.instance.pk %}Save Changes{% else %}Create Collection{% endif %}
+                </button>
+
+                <a href="{% url 'store_dashboard' store.id %}" class="btn-cancel">Cancel</a>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // 🛡️ Auto-Style: Ensure Django widgets get the correct class
+    document.addEventListener("DOMContentLoaded", function() {
+        const inputs = document.querySelectorAll('input[type="text"]');
+        inputs.forEach(input => {
+            if(!input.classList.contains('ti-input')) {
+                input.classList.add('ti-input');
+            }
+        });
+    });
+</script>
+
+{% endblock %}

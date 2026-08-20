@@ -1,0 +1,160 @@
+[33med10f10[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{0}: checkout: moving from temp-chat-fix to main
+[33m2454432[m[33m ([m[1;32mtemp-chat-fix[m[33m)[m HEAD@{1}: checkout: moving from 24544323bf0724155d542dbf35edee7a18bfd70d to temp-chat-fix
+[33m2454432[m[33m ([m[1;32mtemp-chat-fix[m[33m)[m HEAD@{2}: commit: chat
+[33mdd93896[m HEAD@{3}: reset: moving to dd93896
+[33mc805ac3[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{4}: commit: card
+[33mdd93896[m HEAD@{5}: commit: Finale
+[33m5aa2b8b[m HEAD@{6}: commit: insanechange7
+[33m3820242[m HEAD@{7}: commit: insanechange6.9
+[33m60cf8ba[m HEAD@{8}: commit: insanechange6.8
+[33m22aecad[m HEAD@{9}: commit: insanechange6.7
+[33m72dd65e[m HEAD@{10}: commit: insanechange6.6
+[33md5c1495[m HEAD@{11}: commit: insanechange6.5
+[33me3e6f3d[m HEAD@{12}: commit: insanechange6.4
+[33m4df988e[m HEAD@{13}: commit: insanechange6.3
+[33mc1c3158[m HEAD@{14}: commit: insanechange6.2
+[33m35c7b71[m HEAD@{15}: commit: insanechange6.1
+[33m6d3e9ba[m HEAD@{16}: commit: insanechange6
+[33m00e0841[m HEAD@{17}: commit: insanechange5.9
+[33m4cf6095[m HEAD@{18}: commit: insanechange5.8
+[33mfb56855[m HEAD@{19}: commit: insanechange5.7
+[33mfbab998[m HEAD@{20}: commit: insanechange5.6
+[33me31f9a3[m HEAD@{21}: commit: insanechange5.5
+[33m5fa62e3[m HEAD@{22}: commit: insanechange5.4
+[33m383e62c[m HEAD@{23}: commit: insanechange5.3
+[33m7fb24ba[m HEAD@{24}: commit: insanechange5.2
+[33m64d239a[m HEAD@{25}: commit: insanechange5.1
+[33m81e644f[m HEAD@{26}: commit: insanechange5
+[33mfb35367[m HEAD@{27}: commit: insanechange4.9
+[33mbc5ef0d[m HEAD@{28}: commit: insanechange4.8
+[33m3d99ddd[m HEAD@{29}: commit: insanechange4.7
+[33m5d5df50[m HEAD@{30}: commit: insanechange4.6
+[33m27b90d5[m HEAD@{31}: commit: insanechange4.5
+[33m87d0f30[m HEAD@{32}: commit: insanechange4.4
+[33m122c0ee[m HEAD@{33}: commit: insanechange4.3
+[33mc42aad5[m HEAD@{34}: commit: insanechange4.2
+[33m9488210[m HEAD@{35}: commit: insanechange4.1
+[33m0e83589[m HEAD@{36}: checkout: moving from main to 0e83589
+[33med10f10[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{37}: commit: W
+[33m1a2df7b[m HEAD@{38}: commit: orL
+[33m8b204d0[m HEAD@{39}: commit: CRITICAL: Manual Sync for Migration 0016
+[33m8752d4f[m HEAD@{40}: commit: Wol
+[33m7de4d91[m HEAD@{41}: commit: FORCE DEPLOY: Including missing migration 0016
+[33m71cbdf4[m HEAD@{42}: commit: W???
+[33me271114[m HEAD@{43}: commit: W4
+[33m6cb23d2[m HEAD@{44}: commit: W?3
+[33mf3737c2[m HEAD@{45}: commit: W?2
+[33m5ec3ced[m HEAD@{46}: commit: W?1
+[33m72fa76d[m HEAD@{47}: commit: W?
+[33m8f9e906[m HEAD@{48}: commit: l3
+[33m4490ce9[m HEAD@{49}: commit: l2
+[33m982e33f[m HEAD@{50}: commit: l1
+[33ma9cab8b[m HEAD@{51}: commit: W or L
+[33m0e83589[m HEAD@{52}: commit: insanechanges4
+[33m4cac819[m HEAD@{53}: commit: insanechanges3
+[33mba06263[m HEAD@{54}: commit: insanechanges2
+[33medc7ad3[m HEAD@{55}: commit: insanechanges
+[33m1e9c778[m HEAD@{56}: commit: images25
+[33m2bfcebd[m HEAD@{57}: commit: images24
+[33mb73d868[m HEAD@{58}: commit: images23
+[33m36535cf[m HEAD@{59}: commit: images22
+[33m285c799[m HEAD@{60}: commit: images21
+[33m4452b87[m HEAD@{61}: commit: images20
+[33mf87f851[m HEAD@{62}: commit: images19
+[33m2e9ddcd[m HEAD@{63}: commit: images18
+[33ma2159f3[m HEAD@{64}: commit: images17
+[33m764346e[m HEAD@{65}: commit: images16
+[33m2a851a0[m HEAD@{66}: commit: images15
+[33m1ec9b47[m HEAD@{67}: commit: images14
+[33mc49d9a5[m HEAD@{68}: commit: images13
+[33m841c167[m HEAD@{69}: commit: images11
+[33m9fda97d[m HEAD@{70}: commit: images10
+[33mbf2b74c[m HEAD@{71}: commit: images9
+[33ma0b9510[m HEAD@{72}: commit: images8
+[33m0ee7d34[m HEAD@{73}: commit: images7
+[33mf1a00b9[m HEAD@{74}: commit: images6
+[33mec0512b[m HEAD@{75}: commit: images5
+[33m40612d5[m HEAD@{76}: commit: images4
+[33m8d4259c[m HEAD@{77}: commit: images3
+[33mbca9a3a[m HEAD@{78}: commit: images2
+[33mb87afca[m HEAD@{79}: commit: images
+[33mcdb826e[m HEAD@{80}: commit: VERIFY
+[33m10b3638[m HEAD@{81}: commit: boik
+[33m5cd165c[m HEAD@{82}: commit: cark
+[33m840d1d2[m HEAD@{83}: commit: oolk
+[33m35abcda[m HEAD@{84}: commit: wchdckkckk
+[33m5fbf605[m HEAD@{85}: commit: work
+[33m4ffa704[m HEAD@{86}: commit: hello1
+[33m1de93e1[m HEAD@{87}: commit: hello
+[33m0c960f6[m HEAD@{88}: commit: nismaaaa
+[33m48775cc[m HEAD@{89}: commit: shit
+[33maf47604[m HEAD@{90}: commit: patanhi kiya chal raha
+[33mc5a3093[m HEAD@{91}: commit: status
+[33m77d1aa4[m HEAD@{92}: commit: ordersucessl2833330000s
+[33m02ea7c6[m HEAD@{93}: commit: ordersucessl283333s
+[33m8b7d0c4[m HEAD@{94}: commit: ordersucessl28s
+[33m0e947a6[m HEAD@{95}: commit: ordersucessl2s
+[33m5dbba92[m HEAD@{96}: commit: ordersucessls
+[33m046edac[m HEAD@{97}: commit: ordersucesss
+[33m3f30c77[m HEAD@{98}: commit: ordersucessy
+[33m959a61c[m HEAD@{99}: commit: patanhiy
+[33mb1ffdac[m HEAD@{100}: reset: moving to b1ffdac
+[33m7474f56[m HEAD@{101}: commit: fmy
+[33m943cd20[m HEAD@{102}: commit: aby
+[33m4934609[m HEAD@{103}: commit: lolz223112
+[33m588d798[m HEAD@{104}: commit: lolz2232
+[33m76647bc[m HEAD@{105}: commit: lolz2
+[33md0bd1ee[m HEAD@{106}: commit: lolz
+[33m767b6ac[m HEAD@{107}: commit: lolz
+[33ma299d05[m HEAD@{108}: commit: patanhit
+[33mb1ffdac[m HEAD@{109}: commit: e,ailt
+[33m30a4071[m HEAD@{110}: commit: shit
+[33m20a7545[m HEAD@{111}: commit: krazkkkkl
+[33mbb54340[m HEAD@{112}: commit: krazyl
+[33m221593a[m HEAD@{113}: commit: wowowol
+[33m9dd8eec[m HEAD@{114}: commit: chal
+[33m97484e9[m HEAD@{115}: commit: checkoutsmm
+[33mc51a5e4[m HEAD@{116}: commit: checkouts
+[33m74ffb45[m HEAD@{117}: commit: varients
+[33m23c8c19[m HEAD@{118}: commit: cartsss
+[33mb374fbc[m HEAD@{119}: commit: cart
+[33mc20a89f[m HEAD@{120}: commit: hello
+[33m083545c[m HEAD@{121}: commit: newjsjsjsg
+[33mf136a21[m HEAD@{122}: commit: karzyg
+[33m3c16973[m HEAD@{123}: commit: arsheelg
+[33m33e19e9[m HEAD@{124}: commit: jjjjg
+[33mfe802e4[m HEAD@{125}: commit: bg
+[33m8d02f5c[m HEAD@{126}: commit: fresh
+[33me2d3c17[m HEAD@{127}: commit: store check
+[33m7f144a4[m HEAD@{128}: commit: helloootssdsdsd
+[33mc2ae33c[m HEAD@{129}: commit: hellooot
+[33m159a78a[m HEAD@{130}: commit: newshyyyyyykkkkt
+[33mc29e733[m HEAD@{131}: commit: newshyyyyyyt
+[33m0abfe7f[m HEAD@{132}: commit: newshytttttttjjjjjjjt
+[33m21cdc51[m HEAD@{133}: commit: newshytttttttt
+[33m5164eb9[m HEAD@{134}: commit: newshyt
+[33me885e08[m HEAD@{135}: commit: loginchck
+[33ma957078[m HEAD@{136}: commit: login
+[33m8d0f124[m HEAD@{137}: commit: countryhhhhhhhhk
+[33m5864ea0[m HEAD@{138}: commit: countrychdck
+[33mc37ec31[m HEAD@{139}: commit: countryhello
+[33m0134d66[m HEAD@{140}: commit: countrywdd
+[33mc1ad06a[m HEAD@{141}: commit: country
+[33m97690fd[m HEAD@{142}: commit: hello12
+[33m3459c41[m HEAD@{143}: commit: hello
+[33m2b507f6[m HEAD@{144}: commit: checkkk
+[33m22f9c0c[m HEAD@{145}: commit: Finalize Titanium settings: API-based email and batmannd
+[33md83173f[m HEAD@{146}: commit: Finalize Titanium settings: API-based email and secure CSRF originsnew
+[33m75b7117[m HEAD@{147}: commit: Finalize Titanium settings: API-based email and secure CSRF origins
+[33m37a677b[m HEAD@{148}: commit: Finalize clean production build scriptchecl
+[33m98fae54[m HEAD@{149}: commit: Finalize clean production build script
+[33mea80f92[m HEAD@{150}: commit: Fix Brevo SMTP host address check
+[33m989e15a[m HEAD@{151}: commit: Fix Brevo SMTP host address
+[33m156cc9d[m HEAD@{152}: commit: Deploy finalized signup GUI and build-script cleanup
+[33me4659b2[m HEAD@{153}: commit: Finalize professional Signup GUI with error tracking
+[33mc568869[m HEAD@{154}: commit: Add trusted origins to fix CSRF 403 error
+[33m6f4dfbd[m HEAD@{155}: commit: Add professional forgot password GUI
+[33m20587fa[m HEAD@{156}: commit: Activate professional login GUI and Brevo security
+[33m45075b1[m HEAD@{157}: commit: login
+[33md38f2a2[m HEAD@{158}: commit: cheeeI
+[33ma6567cf[m HEAD@{159}: comm

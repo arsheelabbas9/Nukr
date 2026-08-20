@@ -1,0 +1,439 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Checkout | {{ store.name }}{% endblock %}
+
+{% block content %}
+
+<style>
+    :root {
+        --ti-navy: #0f172a;
+        --ti-navy-hover: #1e293b;
+        --ti-blue: #2563eb;
+        --ti-red: #ef4444;
+        --ti-bg: #f8fafc;
+        --ti-card-bg: #ffffff;
+        --ti-border: #e2e8f0;
+        --ti-text: #1f2937;
+        --ti-text-muted: #6b7280;
+    }
+
+    body { background-color: var(--ti-bg); font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+
+    .checkout-wrapper {
+        max-width: 1200px; margin: 40px auto; padding: 0 20px 100px;
+    }
+
+    /* --- HEADER WITH BACK LINK --- */
+    .page-header {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 30px;
+    }
+    .page-title {
+        font-size: 2rem; font-weight: 800; color: var(--ti-navy); margin: 0;
+        letter-spacing: -0.03em;
+    }
+    .back-link {
+        color: var(--ti-text-muted); text-decoration: none; font-weight: 600;
+        font-size: 0.9rem; transition: 0.2s; display: flex; align-items: center; gap: 6px;
+    }
+    .back-link:hover { color: var(--ti-navy); }
+
+    /* --- LAYOUT GRID --- */
+    .checkout-grid {
+        display: grid; grid-template-columns: 1.6fr 1fr; gap: 40px;
+        align-items: start;
+    }
+
+    /* --- CARDS --- */
+    .ti-card {
+        background: var(--ti-card-bg); border-radius: 20px; padding: 30px;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.02);
+        border: 1px solid var(--ti-border);
+        margin-bottom: 30px;
+    }
+    
+    .card-title {
+        font-size: 1.25rem; font-weight: 800; color: var(--ti-navy);
+        margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--ti-border);
+        display: flex; align-items: center; gap: 12px;
+    }
+    .step-badge {
+        background: var(--ti-navy); color: white; width: 32px; height: 32px;
+        border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        font-size: 0.95rem; font-weight: 700; flex-shrink: 0;
+    }
+
+    /* --- FORMS --- */
+    .form-group { margin-bottom: 20px; }
+    .form-label { 
+        font-weight: 600; color: var(--ti-text); margin-bottom: 8px; 
+        display: block; font-size: 0.95rem; 
+    }
+    
+    .ti-input, input[type="text"], input[type="email"], input[type="tel"], textarea, select {
+        width: 100%; padding: 14px 18px; border-radius: 12px;
+        border: 1px solid var(--ti-border); background: #f9fafb;
+        font-size: 1rem; color: var(--ti-navy); transition: 0.2s;
+        box-sizing: border-box; font-family: inherit;
+    }
+    .ti-input:focus, input:focus, textarea:focus, select:focus {
+        background: white; border-color: var(--ti-navy); outline: none;
+        box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.1);
+    }
+
+    /* --- PAYMENT SELECTION (AESTHETIC) --- */
+    .payment-options {
+        display: flex; flex-direction: column; gap: 15px;
+    }
+
+    .pay-option-label {
+        cursor: pointer; display: block; position: relative;
+    }
+
+    /* Hide default radio */
+    .pay-option-label input[type="radio"] {
+        position: absolute; opacity: 0; width: 0; height: 0;
+    }
+
+    .pay-card-visual {
+        display: flex; align-items: center; gap: 15px;
+        padding: 20px; border: 1px solid var(--ti-border);
+        border-radius: 16px; background: white;
+        transition: all 0.2s ease;
+    }
+
+    .pay-card-visual:hover {
+        border-color: #cbd5e1; background: #f9fafb;
+    }
+
+    /* Selected State */
+    .pay-option-label input[type="radio"]:checked + .pay-card-visual {
+        border-color: var(--ti-navy);
+        background-color: #f0fdfa; /* Very subtle tint */
+        box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.1);
+    }
+
+    .pay-icon-box {
+        width: 50px; height: 50px; background: #f3f4f6;
+        border-radius: 12px; display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem; flex-shrink: 0; transition: 0.2s;
+    }
+    .pay-option-label input[type="radio"]:checked + .pay-card-visual .pay-icon-box {
+        background: white;
+    }
+
+    .pay-info { flex-grow: 1; }
+    .pay-name { display: block; font-weight: 700; color: var(--ti-navy); font-size: 1.05rem; }
+    .pay-desc { display: block; font-size: 0.9rem; color: var(--ti-text-muted); margin-top: 2px; }
+
+    /* Custom Radio Circle */
+    .radio-circle {
+        width: 22px; height: 22px; border: 2px solid #d1d5db; border-radius: 50%;
+        position: relative; flex-shrink: 0; transition: 0.2s;
+    }
+    .pay-option-label input[type="radio"]:checked + .pay-card-visual .radio-circle {
+        border-color: var(--ti-navy); background: var(--ti-navy);
+        box-shadow: inset 0 0 0 4px white;
+    }
+
+    /* Bank Details Section */
+    .bank-details {
+        margin-top: 25px; padding: 25px; background: #f8fafc; 
+        border-radius: 16px; border: 1px dashed var(--ti-border);
+        display: none; /* Hidden by default */
+        animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: 0; } }
+
+    .bank-header { font-weight: 700; color: var(--ti-navy); margin-bottom: 15px; font-size: 1.1rem; }
+    .bank-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem; }
+    .bank-label { color: var(--ti-text-muted); }
+    .bank-val { font-weight: 600; color: var(--ti-text); text-align: right; }
+
+    /* --- SUMMARY SIDE --- */
+    .summary-card {
+        position: sticky; top: 30px;
+    }
+
+    .item-row {
+        display: flex; gap: 15px; padding: 15px 0; border-bottom: 1px solid var(--ti-border);
+        align-items: center;
+    }
+    .item-check {
+        accent-color: var(--ti-navy); transform: scale(1.2); cursor: pointer;
+    }
+    .item-img {
+        width: 50px; height: 50px; border-radius: 8px; background: #f1f5f9; object-fit: cover;
+    }
+    .item-info { flex-grow: 1; min-width: 0; }
+    .item-name { 
+        font-weight: 700; font-size: 0.95rem; color: var(--ti-navy); 
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+    }
+    .item-meta { font-size: 0.8rem; color: var(--ti-text-muted); }
+    .item-price { font-weight: 700; color: var(--ti-navy); font-size: 0.95rem; white-space: nowrap; }
+
+    /* Coupon */
+    .coupon-group { display: flex; gap: 10px; margin-top: 25px; }
+    .btn-apply {
+        background: var(--ti-navy); color: white; border: none; padding: 0 20px;
+        border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s;
+    }
+    .btn-apply:hover { background: var(--ti-navy-hover); }
+
+    /* Totals */
+    .summary-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 0.95rem; color: var(--ti-text-muted); }
+    .summary-val { color: var(--ti-text); font-weight: 600; }
+    
+    .total-row {
+        display: flex; justify-content: space-between; margin-top: 20px; padding-top: 20px;
+        border-top: 2px dashed var(--ti-border);
+        font-size: 1.4rem; font-weight: 800; color: var(--ti-navy);
+        align-items: center;
+    }
+
+    .btn-confirm {
+        display: flex; align-items: center; justify-content: center; width: 100%; 
+        background: var(--ti-navy); color: white; padding: 18px; margin-top: 25px;
+        border-radius: 50px; font-weight: 700; font-size: 1.1rem;
+        border: none; cursor: pointer; transition: 0.2s;
+        box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.1), 0 2px 4px -1px rgba(15, 23, 42, 0.06);
+    }
+    .btn-confirm:hover { 
+        background: var(--ti-navy-hover); transform: translateY(-2px); 
+        box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.1);
+    }
+
+    .secure-note {
+        text-align: center; margin-top: 15px; font-size: 0.85rem; color: #9ca3af;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+        .checkout-grid { grid-template-columns: 1fr; }
+        .summary-card { order: -1; position: static; margin-bottom: 30px; }
+    }
+</style>
+
+<div class="checkout-wrapper">
+    
+    <div class="page-header">
+        <h1 class="page-title">Checkout</h1>
+        <a href="{% url 'view_cart' store.id %}" class="back-link">
+            ← Back to Cart
+        </a>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="checkout-grid">
+        {% csrf_token %}
+
+        <div>
+            
+            <div class="ti-card">
+                <div class="card-title">
+                    <span class="step-badge">1</span> Shipping Details
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    {{ form.shipping_name }}
+                </div>
+
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <div class="form-group" style="flex: 1; min-width: 200px;">
+                        <label class="form-label">Email Address</label>
+                        {{ form.shipping_email }}
+                    </div>
+                    <div class="form-group" style="flex: 1; min-width: 200px;">
+                        <label class="form-label">Phone Number</label>
+                        {{ form.shipping_phone }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">City</label>
+                    {{ form.shipping_city }}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Delivery Address</label>
+                    {{ form.shipping_address }}
+                </div>
+            </div>
+
+            <div class="ti-card">
+                <div class="card-title">
+                    <span class="step-badge">2</span> Payment Method
+                </div>
+
+                <div class="payment-options">
+                    {% for radio in form.payment_choice %}
+                        <label class="pay-option-label">
+                            {{ radio.tag }} <div class="pay-card-visual">
+                                <div class="pay-icon-box">
+                                    {% if 'Cash' in radio.choice_label %}
+                                        💵
+                                    {% else %}
+                                        🏦
+                                    {% endif %}
+                                </div>
+                                <div class="pay-info">
+                                    <span class="pay-name">{{ radio.choice_label }}</span>
+                                    <span class="pay-desc">
+                                        {% if 'Cash' in radio.choice_label %}
+                                            Pay cash at your doorstep upon delivery.
+                                        {% else %}
+                                            Transfer directly to our bank account.
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="radio-circle"></div>
+                            </div>
+                        </label>
+                    {% endfor %}
+                </div>
+
+                <div id="bank-section" class="bank-details">
+                    <h5 class="bank-header">Bank Account Info</h5>
+                    
+                    <div class="bank-row">
+                        <span class="bank-label">Bank Name</span>
+                        <span class="bank-val">{{ store.bank_name|default:"Contact Store" }}</span>
+                    </div>
+                    <div class="bank-row">
+                        <span class="bank-label">Account Title</span>
+                        <span class="bank-val">{{ store.payment_account_title|default:"-" }}</span>
+                    </div>
+                    <div class="bank-row">
+                        <span class="bank-label">IBAN / Account No</span>
+                        <span class="bank-val">{{ store.payment_account_number|default:"-" }}</span>
+                    </div>
+
+                    <div style="margin-top: 25px; padding-top: 20px; border-top: 1px dashed #cbd5e1;">
+                        <label class="form-label">Upload Payment Proof (Screenshot)</label>
+                        {{ form.payment_screenshot }}
+                        <small style="color:var(--ti-text-muted); display:block; margin-top:8px;">Please attach a screenshot of your transaction.</small>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div>
+            <div class="ti-card summary-card">
+                <div class="card-title">🛒 Order Summary</div>
+
+                <div style="max-height: 350px; overflow-y: auto; padding-right: 5px; margin-bottom: 25px;">
+                    {% for item in cart_items %}
+                        <div class="item-row">
+                            <input type="checkbox" name="selected_items" value="{{ item.key }}" class="item-check" checked onchange="updateTotal()">
+                            
+                            {% if item.image_url %}
+                                <img src="{{ item.image_url }}" class="item-img" alt="{{ item.name }}">
+                            {% else %}
+                                <div class="item-img" style="display:flex; align-items:center; justify-content:center;">📦</div>
+                            {% endif %}
+                            
+                            <div class="item-info">
+                                <div class="item-name">{{ item.name }}</div>
+                                <div class="item-meta">
+                                    Qty: {{ item.quantity }} {% if item.variant and item.variant != "Standard" %}| {{ item.variant }}{% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="item-price" data-price="{{ item.total|stringformat:'f' }}">
+                                Rs. {{ item.total }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="coupon-group">
+                    <input type="text" name="code" class="ti-input" placeholder="Discount Code">
+                    <button type="submit" formaction="{% url 'apply_coupon' store.id %}" formnovalidate class="btn-apply">Apply</button>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span id="display-subtotal" class="summary-val">Rs. {{ subtotal }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Delivery Fee</span>
+                        <span class="summary-val">
+                            {% if delivery_fee == 0 %}
+                                <span style="color:var(--ti-green);">FREE</span>
+                            {% else %}
+                                Rs. {{ delivery_fee }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    {% if discount_amount > 0 %}
+                        <div class="summary-row" style="color:var(--ti-green);">
+                            <span>Discount</span>
+                            <span style="font-weight:700;">- Rs. {{ discount_amount }}</span>
+                        </div>
+                    {% endif %}
+
+                    <div class="total-row">
+                        <span>Total</span>
+                        <span id="display-total">Rs. {{ grand_total }}</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-confirm">Confirm Order</button>
+            </div>
+        </div>
+
+    </form>
+</div>
+
+<script>
+    // 1. Payment Toggle Logic
+    const radios = document.querySelectorAll('input[name="payment_choice"]');
+    const bankSection = document.getElementById('bank-section');
+    const screenshotInput = document.getElementById('id_payment_screenshot');
+
+    function toggleBank() {
+        let isOnline = false;
+        radios.forEach(r => {
+            if (r.checked && r.value === 'ONLINE') isOnline = true;
+        });
+
+        if (isOnline) {
+            bankSection.style.display = 'block';
+            if(screenshotInput) screenshotInput.required = true;
+        } else {
+            bankSection.style.display = 'none';
+            if(screenshotInput) screenshotInput.required = false;
+        }
+    }
+
+    radios.forEach(r => r.addEventListener('change', toggleBank));
+    toggleBank(); // Run on init
+
+    // 2. Dynamic Totals
+    function updateTotal() {
+        let sub = 0;
+        document.querySelectorAll('.item-check:checked').forEach(cb => {
+            const row = cb.closest('.item-row');
+            const price = parseFloat(row.querySelector('.item-price').dataset.price);
+            if(!isNaN(price)) sub += price;
+        });
+
+        // Get context values (rendered by Django)
+        const delivery = parseFloat("{{ delivery_fee|default:0|stringformat:'f' }}");
+        const discountPct = parseFloat("{{ discount_percent|default:0|stringformat:'f' }}");
+        
+        // Simple logic for coupons
+        const discountAmt = (sub * discountPct) / 100;
+        const total = sub + delivery - discountAmt;
+
+        document.getElementById('display-subtotal').innerText = 'Rs. ' + sub.toFixed(1);
+        document.getElementById('display-total').innerText = 'Rs. ' + total.toFixed(1);
+    }
+</script>
+
+{% endblock %}

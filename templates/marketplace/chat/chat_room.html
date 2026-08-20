@@ -1,0 +1,1049 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Chat | {{ conversation.store.name }}{% endblock %}
+
+{% block content %}
+
+<style>
+    /* ==========================================================================
+       1. TITANIUM THEME VARIABLES (Scoped)
+       ========================================================================== */
+    :root {
+        /* Color Palette */
+        --ti-navy: #0f172a;
+        --ti-navy-light: #1e293b;
+        --ti-blue: #2563eb;
+        --ti-blue-hover: #1d4ed8;
+        --ti-blue-soft: rgba(37, 99, 235, 0.08);
+        --ti-bg: #f1f5f9;
+        --ti-white: #ffffff;
+        
+        /* Glass Effect */
+        --ti-glass: rgba(255, 255, 255, 0.95);
+        
+        /* State Colors */
+        --ti-danger: #ef4444;
+        --ti-danger-hover: #dc2626;
+        --ti-success: #10b981;
+        --ti-success-hover: #059669;
+        --ti-gold: #f59e0b;
+        --ti-gold-hover: #d97706;
+        
+        /* Borders & Shadows */
+        --ti-border: #e2e8f0;
+        --ti-shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        --ti-shadow-lg: 0 20px 50px -12px rgba(15, 23, 42, 0.15);
+        
+        /* Message Bubble Theme */
+        --msg-sent-bg: #2563eb;
+        --msg-sent-text: #ffffff;
+        --msg-rcvd-bg: #ffffff;
+        --msg-rcvd-text: #0f172a;
+    }
+
+    /* ==========================================================================
+       2. GLOBAL RESETS & LAYOUT
+       ========================================================================== */
+    
+    /* Hide Django global messages to prevent UI clutter inside chat */
+    .messages-container, 
+    .alert, 
+    .django-messages { 
+        display: none !important; 
+    }
+
+    /* NOTE: We do NOT set body height to 100vh here anymore.
+       This ensures the footer from base.html is visible when scrolling down.
+    */
+    .chat-page-wrapper {
+        padding: 40px 0;
+        background-color: var(--ti-bg);
+        min-height: 80vh; /* Ensure chat takes up good screen space */
+        display: flex;
+        justify-content: center;
+    }
+
+    /* The Main Viewport Container */
+    .messenger-viewport {
+        width: 100%;
+        max-width: 1100px;
+        height: 85vh; /* Fixed height for the chat window itself */
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        /* The container gets the border/radius, separating it from the footer */
+        border-radius: 24px;
+        box-shadow: var(--ti-shadow-lg);
+        background: white;
+        overflow: hidden; /* Contains the internal scroll */
+        border: 1px solid var(--ti-border);
+    }
+
+    /* Mobile Adjustment */
+    @media (max-width: 768px) {
+        .chat-page-wrapper { padding: 0; }
+        .messenger-viewport { height: 90vh; border-radius: 0; border: none; }
+    }
+
+    /* ==========================================================================
+       3. CHAT HEADER COMPONENT
+       ========================================================================== */
+    .chat-header {
+        height: 72px;
+        flex-shrink: 0; /* Ensures header never collapses */
+        padding: 0 24px;
+        background: var(--ti-white);
+        border-bottom: 1px solid var(--ti-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        z-index: 50;
+    }
+
+    /* Left Side: Back Button & User Info */
+    .user-meta {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    
+    .back-btn-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--ti-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--ti-navy);
+        transition: all 0.2s ease;
+        text-decoration: none;
+        border: 1px solid var(--ti-border);
+        font-size: 1rem;
+    }
+    .back-btn-circle:hover { 
+        background: var(--ti-navy); 
+        color: var(--ti-white); 
+        transform: translateX(-2px);
+    }
+
+    /* Avatar Styling */
+    .avatar-wrapper { 
+        position: relative; 
+    }
+    
+    .avatar-squircle {
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+        object-fit: cover;
+        border: 1px solid var(--ti-border);
+    }
+    
+    .avatar-placeholder {
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+        background: var(--ti-navy);
+        color: var(--ti-white);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1.2rem;
+        text-transform: uppercase;
+    }
+    
+    .status-dot {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        width: 12px;
+        height: 12px;
+        background: var(--ti-success);
+        border: 2px solid var(--ti-white);
+        border-radius: 50%;
+    }
+
+    /* Identity Text */
+    .identity-block { 
+        display: flex; 
+        flex-direction: column; 
+        justify-content: center; 
+    }
+    
+    .identity-name {
+        margin: 0;
+        font-weight: 800;
+        color: var(--ti-navy);
+        font-size: 1.05rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        line-height: 1.2;
+    }
+    
+    .identity-role {
+        color: #64748b;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Right Side: Header Tools */
+    .header-actions { 
+        display: flex; 
+        gap: 12px; 
+        align-items: center; 
+    }
+    
+    /* "Sell Item" Button */
+    .btn-action-sell {
+        background: var(--ti-gold);
+        color: white;
+        border: none;
+        padding: 0 18px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 10px rgba(245, 158, 11, 0.25);
+        text-decoration: none;
+        height: 38px;
+    }
+    .btn-action-sell:hover { 
+        background: var(--ti-gold-hover); 
+        transform: translateY(-1px); 
+        box-shadow: 0 6px 15px rgba(245, 158, 11, 0.35);
+        color: white;
+    }
+
+    /* Delete Chat Button */
+    .btn-action-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        border: none;
+        background: transparent;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.2s;
+        cursor: pointer;
+        font-size: 1.1rem;
+    }
+    .btn-action-icon:hover { 
+        background: #fee2e2; 
+        color: var(--ti-danger); 
+    }
+
+    /* ==========================================================================
+       4. MESSAGES CANVAS (THE SCROLLABLE AREA)
+       ========================================================================== */
+    .chat-canvas {
+        flex: 1;
+        overflow-y: auto;
+        padding: 25px 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px; /* 💎 FIX: Very tight gap between bubbles */
+        background-color: #f8fafc;
+        /* Subtle Pattern */
+        background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+        background-size: 24px 24px;
+        scroll-behavior: smooth;
+        position: relative;
+    }
+
+    /* Custom Scrollbar */
+    .chat-canvas::-webkit-scrollbar { width: 6px; }
+    .chat-canvas::-webkit-scrollbar-track { background: transparent; }
+    .chat-canvas::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .chat-canvas::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    /* 💎 MESSAGE WRAPPER (Alignment Logic) */
+    .msg-wrapper {
+        display: flex;
+        flex-direction: column;
+        max-width: 80%; 
+        position: relative;
+        animation: fadeIn 0.2s ease-out;
+        margin-bottom: 2px; /* Tiny margin for grouping */
+    }
+    @keyframes fadeIn { 
+        from { opacity: 0; transform: translateY(5px); } 
+        to { opacity: 1; transform: translateY(0); } 
+    }
+
+    /* Sent Messages -> Right Side */
+    .msg-wrapper.sent { 
+        align-self: flex-end; 
+        align-items: flex-end; 
+    }
+    
+    /* Received Messages -> Left Side */
+    .msg-wrapper.received { 
+        align-self: flex-start; 
+        align-items: flex-start; 
+    }
+
+    /* 💎💎💎 THE CRITICAL BUBBLE FIX 💎💎💎
+       This CSS fixes the "Too much space" issue.
+    */
+    .msg-bubble {
+        /* 1. Sizing */
+        display: inline-block; 
+        width: fit-content; 
+        max-width:  100%;
+        
+        /* 2. Spacing */
+        padding: 1px 5px; /* TIGHT PADDING */
+        
+        /* 3. Text Formatting */
+        font-size: 1rem;
+        line-height: 0.3; /* TIGHT LINE HEIGHT */
+        word-wrap: break-word;
+        white-space: pre-wrap; /* Respect newlines but collapse spacing */
+        
+        /* 4. Visuals */
+        position: relative;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+        cursor: context-menu;
+    }
+
+    /* Remove excessive margins from inner paragraphs if they exist */
+    .msg-bubble p, .msg-bubble span {
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Sent Bubble Style */
+    .sent .msg-bubble {
+        background: var(--msg-sent-bg);
+        color: var(--msg-sent-text);
+        border-radius: 12px 12px 2px 12px; /* Sharper corner */
+        text-align: left; 
+    }
+    
+    /* Received Bubble Style */
+    .received .msg-bubble {
+        background: var(--msg-rcvd-bg);
+        color: var(--msg-rcvd-text);
+        border-radius: 10px 10px 10px 2px;
+        border: 1px solid var(--ti-border);
+        text-align: left;
+    }
+
+    /* 💎 TIMESTAMP (Compact) */
+    .msg-time {
+        font-size: 0.65rem; 
+        font-weight: 600; 
+        opacity: 0.7;
+        margin-top: 2px; /* Tight gap */
+        display: block;
+        line-height: 1;
+        text-align: right; 
+        min-width: 40px;
+    }
+    .sent .msg-time { color: rgba(255,255,255,0.85); }
+    .received .msg-time { color: #94a3b8; }
+
+    /* Image Attachment Styling */
+    .msg-image-content {
+        max-width: 100%; 
+        width: 200px;
+        border-radius: 8px; 
+        margin-bottom: 4px;
+        cursor: zoom-in; 
+        display: block;
+        border: 1px solid rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+    .msg-image-content:hover { transform: scale(1.02); }
+
+    /* ==========================================================================
+       5. FLASH OFFER CARD WIDGET
+       ========================================================================== */
+    .offer-widget {
+        background: white;
+        border-radius: 14px;
+        overflow: hidden;
+        border: 1px solid var(--ti-border);
+        width: 250px; /* Fixed width */
+        margin-top: 4px;
+        display: block; /* Override inline-block */
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    
+    .offer-header {
+        background: var(--ti-gold);
+        color: white; padding: 6px 10px;
+        font-size: 0.7rem; font-weight: 800;
+        text-transform: uppercase; letter-spacing: 0.5px;
+        display: flex; align-items: center; gap: 5px;
+    }
+    
+    .offer-img-frame { 
+        width: 100%; 
+        height: 140px; 
+        background: #f8fafc; 
+        position: relative;
+    }
+    .offer-img-frame img { 
+        width: 100%; 
+        height: 100%; 
+        object-fit: cover; 
+    }
+    
+    .offer-content { 
+        padding: 12px; 
+        text-align: left; 
+        background: white; 
+    }
+    
+    .offer-title-text {
+        font-size: 0.95rem; 
+        font-weight: 700; 
+        color: var(--ti-navy);
+        margin-bottom: 4px; 
+        display: block; 
+        line-height: 1.2;
+        white-space: nowrap; 
+        overflow: hidden; 
+        text-overflow: ellipsis;
+    }
+    
+    .offer-price-tag { 
+        font-size: 1.15rem; 
+        color: var(--ti-success); 
+        font-weight: 800; 
+        display: block; 
+        margin-bottom: 10px; 
+    }
+    
+    .btn-buy-trigger {
+        display: block; width: 100%;
+        background: var(--ti-success); color: white;
+        text-align: center; padding: 10px;
+        border-radius: 8px; font-weight: 700; font-size: 0.85rem;
+        text-decoration: none; 
+        transition: 0.2s; border: none;
+    }
+    .btn-buy-trigger:hover { 
+        background: var(--ti-success-hover); 
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    /* ==========================================================================
+       6. COMPOSITION BAR (FOOTER)
+       ========================================================================== */
+    .chat-footer {
+        padding: 16px 24px;
+        background: var(--ti-white);
+        border-top: 1px solid var(--ti-border);
+        flex-shrink: 0;
+        position: relative;
+    }
+
+    /* Floating Preview for File Uploads */
+    .preview-box-float {
+        position: absolute; 
+        bottom: 80px; 
+        left: 24px;
+        background: white; 
+        padding: 6px; 
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        display: none; 
+        z-index: 40; 
+        border: 1px solid var(--ti-border);
+        animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes popIn { 
+        from { transform: scale(0.8) translateY(20px); opacity: 0; } 
+        to { transform: scale(1) translateY(0); opacity: 1; } 
+    }
+
+    .preview-box-float img { 
+        width: 100px; 
+        height: 100px; 
+        object-fit: cover; 
+        border-radius: 8px; 
+    }
+    
+    .btn-remove-file { 
+        position: absolute; 
+        top: -10px; 
+        right: -10px; 
+        width: 26px; 
+        height: 26px; 
+        background: var(--ti-danger); 
+        color: white; 
+        border-radius: 50%; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        cursor: pointer; 
+        border: 2px solid white; 
+        font-weight: bold; 
+        font-size: 14px;
+        box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
+    }
+
+    /* The Main Input Bar */
+    .input-pill {
+        display: flex; 
+        align-items: center; 
+        gap: 12px;
+        background: var(--ti-bg);
+        padding: 8px 10px 8px 20px;
+        border-radius: 50px;
+        border: 2px solid transparent;
+        transition: 0.3s;
+    }
+    .input-pill:focus-within { 
+        background: white; 
+        border-color: var(--ti-blue); 
+        box-shadow: 0 0 0 4px var(--ti-blue-soft); 
+    }
+
+    .main-text-field {
+        flex: 1; 
+        border: none; 
+        background: transparent;
+        height: 40px; 
+        font-size: 1rem; 
+        outline: none;
+        color: var(--ti-navy); 
+        font-weight: 500;
+    }
+
+    .btn-attach { 
+        color: #94a3b8; 
+        font-size: 1.3rem; 
+        cursor: pointer; 
+        transition: 0.2s; 
+        padding: 5px; 
+        display: flex; 
+        align-items: center; 
+    }
+    .btn-attach:hover { 
+        color: var(--ti-blue); 
+        transform: rotate(15deg); 
+    }
+
+    .btn-send-round {
+        width: 44px; 
+        height: 44px; 
+        border-radius: 50%;
+        background: var(--ti-navy); 
+        color: white; 
+        border: none;
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        cursor: pointer; 
+        transition: 0.2s; 
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+    }
+    .btn-send-round:hover { 
+        background: var(--ti-blue); 
+        transform: scale(1.1) rotate(-10deg); 
+    }
+
+    /* ==========================================================================
+       7. MODALS & CONTEXT MENUS
+       ========================================================================== */
+    .ti-backdrop {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(15,23,42,0.75); backdrop-filter: blur(8px);
+        z-index: 9999; display: none; align-items: center; justify-content: center;
+        animation: fadeIn 0.2s;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .ti-dialog {
+        background: white; width: 90%; max-width: 400px;
+        border-radius: 28px; padding: 35px;
+        box-shadow: 0 30px 60px -12px rgba(0,0,0,0.35);
+        transform: translateY(20px); transition: 0.3s;
+        text-align: left;
+    }
+    .ti-backdrop.active { display: flex; }
+    .ti-backdrop.active .ti-dialog { transform: translateY(0); }
+
+    .ti-input-group { margin-bottom: 20px; }
+    .ti-input-label { 
+        display: block; font-size: 0.75rem; font-weight: 700; 
+        color: #64748b; margin-bottom: 6px; 
+        text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .ti-form-control { 
+        width: 100%; padding: 12px; 
+        border: 2px solid var(--ti-border); border-radius: 10px; 
+        font-size: 1rem; color: var(--ti-navy); background: #f8fafc;
+        transition: 0.2s;
+    }
+    .ti-form-control:focus { border-color: var(--ti-blue); background: white; outline: none; }
+
+    .modal-actions { display: flex; gap: 10px; margin-top: 25px; }
+    .btn-modal { 
+        flex: 1; padding: 12px; border-radius: 12px; 
+        font-weight: 700; border: none; cursor: pointer; font-size: 0.95rem; 
+        transition: 0.2s;
+    }
+    .btn-cancel { background: #f1f5f9; color: var(--ti-navy); }
+    .btn-cancel:hover { background: #e2e8f0; }
+    .btn-confirm { background: var(--ti-gold); color: white; }
+    .btn-confirm:hover { background: var(--ti-gold-hover); transform: translateY(-2px); }
+    .btn-danger { background: var(--ti-danger); color: white; text-decoration: none; display: flex; align-items: center; justify-content: center; }
+    .btn-danger:hover { background: var(--ti-danger-hover); }
+
+    /* Context Menu */
+    .ctx-menu {
+        position: fixed; display: none; background: white;
+        border: 1px solid var(--ti-border); border-radius: 12px;
+        width: 180px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        z-index: 9000; overflow: hidden; padding: 5px;
+    }
+    .ctx-option { 
+        padding: 10px 14px; font-size: 0.9rem; font-weight: 600; 
+        cursor: pointer; color: var(--ti-navy); border-radius: 8px;
+        display: flex; gap: 10px; align-items: center; transition: 0.1s;
+    }
+    .ctx-option:hover { background: #f1f5f9; color: var(--ti-blue); }
+    .ctx-option.delete { border-top: 1px solid #f1f5f9; color: var(--ti-danger); }
+    .ctx-option.delete:hover { background: #fef2f2; }
+
+</style>
+
+<div class="chat-page-wrapper">
+    <div class="messenger-viewport">
+        
+        <header class="chat-header">
+            <div class="user-meta">
+                <a href="{% url 'my_chats' %}" class="back-btn-circle"><i class="fas fa-arrow-left"></i></a>
+                
+                <div class="d-flex align-items-center gap-3">
+                    <div class="avatar-wrapper">
+                        {% if request.user == conversation.customer %}
+                            {% if conversation.store.image %}
+                                <img src="{{ conversation.store.image.url }}" class="avatar-squircle">
+                            {% else %}
+                                <div class="avatar-placeholder">{{ conversation.store.name|slice:":1"|upper }}</div>
+                            {% endif %}
+                            <div class="status-dot"></div>
+                        {% else %}
+                            <div class="avatar-placeholder" style="background: var(--ti-blue);">{{ conversation.customer.username|slice:":1"|upper }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="identity-block">
+                        {% if request.user == conversation.customer %}
+                            <h4 class="identity-name">
+                                {{ conversation.store.name }} 
+                                {% if conversation.store.is_verified %}<i class="fas fa-check-circle text-primary" style="font-size: 0.9em;"></i>{% endif %}
+                            </h4>
+                            <span class="identity-role">Verified Store</span>
+                        {% else %}
+                            <h4 class="identity-name">{{ conversation.customer.username }}</h4>
+                            <span class="identity-role">Customer</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                {% if request.user == conversation.store.owner %}
+                    <button class="btn-action-sell" id="triggerOfferModal">
+                        <i class="fas fa-bolt"></i> Sell Item
+                    </button>
+                {% endif %}
+                
+                <button class="btn-action-icon" id="triggerDeleteChat" title="Delete Conversation">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="chat-canvas" id="msgCanvas">
+            {% for msg in messages %}
+                <div class="msg-wrapper {% if msg.sender == request.user %}sent{% else %}received{% endif %}"
+                     id="msg-{{ msg.id }}" 
+                     data-id="{{ msg.id }}"
+                     data-is-mine="{% if msg.sender == request.user %}true{% else %}false{% endif %}">
+                    
+                    <div class="msg-bubble">
+                        
+                        {% if "[OFFER]" in msg.text %}
+                            <div class="offer-card-placeholder" data-raw="{{ msg.text }}"></div>
+                        
+                        {% else %}
+                            {% if msg.image %}
+                                <img src="{{ msg.image.url }}" class="msg-image-content" alt="Attachment" onclick="window.open(this.src, '_blank')">
+                            {% endif %}
+                            
+                            {% if msg.text %}
+                                {{ msg.text }}
+                            {% endif %}
+                        {% endif %}
+
+                        <span class="msg-time">{{ msg.timestamp|date:"h:i A" }}</span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="preview-box-float" id="filePreviewBox">
+            <div class="btn-remove-file" id="clearFileBtn">&times;</div>
+            <img id="previewImgElement" src="" alt="Preview">
+        </div>
+
+        <footer class="chat-footer">
+            <form id="sendMessageForm" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="input-pill">
+                    <label for="hiddenFileInput" class="btn-attach" title="Attach Image">
+                        <i class="fas fa-paperclip"></i>
+                    </label>
+                    <input type="file" id="hiddenFileInput" name="image" hidden accept="image/*">
+                    
+                    <input type="text" name="text" class="main-text-field" id="messageInput" placeholder="Type a message..." autocomplete="off">
+                    
+                    <button type="submit" class="btn-send-round">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </form>
+        </footer>
+
+    </div>
+</div>
+
+<div class="ti-backdrop" id="modalDeleteChat">
+    <div class="ti-dialog">
+        <div class="text-center mb-4">
+            <i class="fas fa-exclamation-triangle text-danger fa-3x mb-3"></i>
+            <h3 class="fw-bold text-dark mb-2">Delete Conversation?</h3>
+            <p class="text-muted">This action is permanent. All history and offers will be lost.</p>
+        </div>
+        <div class="dialog-footer">
+            <button class="btn-dialog cancel" id="cancelDelete">Cancel</button>
+            <a href="{% url 'delete_conversation' conversation.id %}" class="btn-dialog danger">Delete Forever</a>
+        </div>
+    </div>
+</div>
+
+<div class="ti-backdrop" id="modalCreateOffer">
+    <div class="ti-dialog">
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="bg-warning rounded-circle p-2 text-white d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                <i class="fas fa-bolt fa-lg"></i>
+            </div>
+            <div>
+                <h4 class="fw-bold m-0 text-dark">Flash Offer</h4>
+                <small class="text-muted">Instant "Buy Now" card</small>
+            </div>
+        </div>
+        
+        <form id="createOfferForm">
+            <div class="ti-input-group">
+                <label class="ti-input-label">Item Name</label>
+                <input type="text" name="offer_title" class="ti-form-control" placeholder="e.g. Red Bridal Dress" required>
+            </div>
+            
+            <div class="ti-input-group">
+                <label class="ti-input-label">Price (PKR)</label>
+                <input type="number" name="offer_price" class="ti-form-control" placeholder="e.g. 5000" required>
+            </div>
+
+            <div class="ti-input-group">
+                <label class="ti-input-label">Photo (Optional)</label>
+                <input type="file" name="offer_image" class="ti-form-control" accept="image/*">
+            </div>
+
+            <div class="dialog-footer">
+                <button type="button" class="btn-dialog cancel" id="cancelOffer">Cancel</button>
+                <button type="submit" class="btn-dialog confirm">Send Offer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="ctx-menu" id="contextMenu">
+    <div class="ctx-option" id="ctxCopy"><i class="fas fa-copy"></i> Copy Text</div>
+    <div class="ctx-option delete" id="ctxDelete"><i class="fas fa-trash-alt"></i> Delete Message</div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // --- 1. GLOBAL STATE & SELECTORS ---
+        const canvas = document.getElementById('msgCanvas');
+        const messageInput = document.getElementById('messageInput');
+        const fileInput = document.getElementById('hiddenFileInput');
+        const previewBox = document.getElementById('filePreviewBox');
+        const contextMenu = document.getElementById('contextMenu');
+        
+        let activeMsgId = null;
+        let messageCount = {{ messages|length }}; // Safe integer injection
+
+        // --- 2. CSRF TOKEN GENERATOR (CRITICAL FOR AJAX) ---
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+
+        // --- 3. AUTO SCROLL TO BOTTOM ---
+        function scrollToBottom() { 
+            canvas.scrollTop = canvas.scrollHeight; 
+        }
+        scrollToBottom(); // Run on init
+
+        // --- 4. FLASH OFFER PARSER (REGEX ENGINE) ---
+        function parseOffers() {
+            const placeholders = document.querySelectorAll('.offer-card-placeholder');
+            placeholders.forEach(wrapper => {
+                if(wrapper.innerHTML.trim() !== "") return; // Skip if already processed
+
+                const rawText = wrapper.getAttribute('data-raw');
+                
+                // Safe Regex Parsing with fallback
+                const getVal = (key) => {
+                    const regex = new RegExp(`${key}: (.*)`);
+                    const match = rawText.match(regex);
+                    return match ? match[1].trim() : '';
+                };
+
+                const title = getVal('Title') || 'Special Item';
+                const price = getVal('Price') || '0';
+                const link = getVal('Link') || '#';
+                const img = getVal('Image');
+
+                // Build HTML Card
+                let html = `
+                    <div class="offer-widget">
+                        <div class="offer-header">
+                            <i class="fas fa-star"></i> Seller Offer
+                        </div>
+                        ${img ? `<div class="offer-img-frame"><img src="${img}"></div>` : ''}
+                        <div class="offer-content">
+                            <span class="offer-title-text">${title}</span>
+                            <span class="offer-price-tag">Rs. ${price}</span>
+                            <a href="${link}" class="btn-buy-trigger">BUY NOW</a>
+                        </div>
+                    </div>`;
+                
+                wrapper.innerHTML = html;
+            });
+        }
+        parseOffers(); // Run immediately on load
+
+        // --- 5. SEND MESSAGE HANDLER ---
+        const sendForm = document.getElementById('sendMessageForm');
+        sendForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validation: Don't send empty
+            if (!messageInput.value.trim() && !fileInput.files.length) return;
+
+            const formData = new FormData(this);
+            
+            // Optimistic UI: Clear input immediately for better UX
+            messageInput.value = '';
+            fileInput.value = '';
+            previewBox.style.display = 'none';
+
+            // API Call
+            fetch("{% url 'send_message_api' conversation.id %}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Reload to sync state and show message
+                    location.reload(); 
+                } else {
+                    console.error("Server Error:", data);
+                }
+            })
+            .catch(error => console.error("Network Error:", error));
+        });
+
+        // --- 6. SELLER OFFER HANDLER ---
+        const offerForm = document.getElementById('createOfferForm');
+        if (offerForm) {
+            offerForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const btn = this.querySelector('button[type="submit"]');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+                btn.disabled = true;
+
+                const formData = new FormData(this);
+
+                fetch("{% url 'create_custom_offer' conversation.id %}", {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': csrftoken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        location.reload();
+                    } else {
+                        alert(data.message || "Could not create offer.");
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }
+                });
+            });
+        }
+
+        // --- 7. FILE ATTACHMENT PREVIEW ---
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('previewImgElement').src = e.target.result;
+                    previewBox.style.display = 'block';
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+
+        document.getElementById('clearFileBtn').addEventListener('click', function() {
+            fileInput.value = '';
+            previewBox.style.display = 'none';
+        });
+
+        // --- 8. MODAL SYSTEM ---
+        function toggleModal(modalId, action) {
+            const modal = document.getElementById(modalId);
+            if (!modal) return;
+            if (action === 'open') modal.classList.add('active');
+            else modal.classList.remove('active');
+        }
+
+        // Event Listeners for Triggers
+        const btnDelChat = document.getElementById('triggerDeleteChat');
+        if(btnDelChat) btnDelChat.addEventListener('click', () => toggleModal('modalDeleteChat', 'open'));
+
+        const btnSell = document.getElementById('triggerOfferModal');
+        if(btnSell) btnSell.addEventListener('click', () => toggleModal('modalCreateOffer', 'open'));
+
+        // Event Listeners for Closing
+        document.getElementById('cancelDelete')?.addEventListener('click', () => toggleModal('modalDeleteChat', 'close'));
+        document.getElementById('cancelOffer')?.addEventListener('click', () => toggleModal('modalCreateOffer', 'close'));
+
+        // --- 9. CONTEXT MENU LOGIC (RIGHT CLICK) ---
+        canvas.addEventListener('contextmenu', function(e) {
+            const wrapper = e.target.closest('.msg-wrapper');
+            if (wrapper) {
+                e.preventDefault();
+                
+                // Get ownership from data attribute (string "true"/"false")
+                const isMine = wrapper.dataset.isMine === 'true';
+                
+                // Only show delete option if message belongs to user
+                const deleteOption = document.getElementById('ctxDelete');
+                deleteOption.style.display = isMine ? 'flex' : 'none';
+
+                activeMsgId = wrapper.dataset.id;
+                
+                contextMenu.style.display = 'block';
+                
+                // Smart positioning to keep menu on screen
+                let x = e.pageX;
+                let y = e.pageY;
+                if (x + 200 > window.innerWidth) x -= 200;
+                
+                contextMenu.style.left = `${x}px`;
+                contextMenu.style.top = `${y}px`;
+            }
+        });
+
+        // Hide menu on any click
+        document.addEventListener('click', () => contextMenu.style.display = 'none');
+
+        // Context Menu Actions
+        document.getElementById('ctxDelete').addEventListener('click', function() {
+            if (!activeMsgId) return;
+
+            fetch(`/api/message/delete/${activeMsgId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Animate removal from DOM
+                    const el = document.getElementById(`msg-${activeMsgId}`);
+                    if (el) {
+                        el.style.opacity = '0';
+                        setTimeout(() => el.remove(), 300);
+                    }
+                }
+            });
+        });
+
+        document.getElementById('ctxCopy').addEventListener('click', function() {
+            if (!activeMsgId) return;
+            const textEl = document.querySelector(`#msg-${activeMsgId} .msg-bubble span`);
+            if(textEl) {
+                navigator.clipboard.writeText(textEl.innerText);
+            }
+        });
+
+        // --- 10. REAL-TIME POLLING (5s) ---
+        setInterval(() => {
+            fetch("{% url 'get_messages_api' conversation.id %}", {
+                headers: {'X-Requested-With': 'XMLHttpRequest'}
+            })
+            .then(res => res.json())
+            .then(data => {
+                // If message count changes, reload to sync logic
+                if (data.messages && data.messages.length > messageCount) {
+                    location.reload(); 
+                }
+            })
+            .catch(() => {}); // Silent fail
+        }, 5000);
+
+    });
+</script>
+
+{% endblock %}

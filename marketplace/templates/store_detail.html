@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}{{ store.name }} | Nukr.{% endblock %}
+
+{% block content %}
+<style>
+    /* --- STORE HEADER SECTION --- */
+    .store-header {
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+        color: white;
+        padding: 60px 20px;
+        text-align: center;
+        border-radius: 0 0 24px 24px;
+        margin-bottom: 50px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    .store-title { font-size: 2.8rem; font-weight: 800; margin: 0; letter-spacing: -1px; }
+    .store-city { 
+        background: rgba(255,255,255,0.15); padding: 6px 18px; 
+        border-radius: 50px; font-size: 0.95rem; display: inline-block; margin-top: 15px;
+        font-weight: 600;
+    }
+    .store-desc {
+        margin-top: 20px; max-width: 700px; margin-left: auto; margin-right: auto; 
+        color: #cbd5e1; font-size: 1.05rem; line-height: 1.6;
+    }
+
+    /* --- PRODUCT GRID LAYOUT --- */
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px 80px;
+    }
+
+    /* --- PRODUCT CARD DESIGN --- */
+    .product-card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.2s ease;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+    .product-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.1);
+        border-color: #cbd5e1;
+    }
+
+    /* 1. Image Area */
+    .p-image {
+        height: 260px;
+        width: 100%;
+        background: #f8fafc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .p-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s;
+    }
+    .product-card:hover .p-image img { transform: scale(1.05); }
+
+    /* 2. Content Area */
+    .p-details { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
+    .p-name { font-weight: 700; color: #0f172a; margin-bottom: 8px; font-size: 1.1rem; line-height: 1.3; }
+    .p-desc { 
+        color: #64748b; font-size: 0.9rem; margin-bottom: 15px; flex-grow: 1;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; 
+    }
+
+    /* 3. Pricing Area */
+    .p-price-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 15px; }
+    .current-price { color: #0f172a; font-weight: 800; font-size: 1.25rem; }
+    .old-price { text-decoration: line-through; color: #94a3b8; font-size: 0.95rem; }
+
+    /* 4. Badges */
+    .badge {
+        position: absolute; top: 12px; left: 12px; z-index: 10;
+        padding: 5px 12px; border-radius: 6px; 
+        font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .badge-sale { background: #ef4444; color: white; }
+    .badge-out { background: #64748b; color: white; }
+
+    /* 5. Buttons */
+    .btn-cart {
+        width: 100%; padding: 12px; border-radius: 10px; border: none;
+        background: #0f172a; color: white; font-weight: 700; cursor: pointer; transition: 0.2s;
+        font-size: 0.95rem;
+    }
+    .btn-cart:hover { background: #334155; transform: scale(1.02); }
+    .btn-cart:active { transform: scale(0.98); }
+    
+    .btn-disabled { background: #cbd5e1; cursor: not-allowed; color: #64748b; }
+    .btn-disabled:hover { background: #cbd5e1; transform: none; }
+
+    /* Owner Controls */
+    .owner-bar { margin-top: 30px; }
+    .btn-add-product {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: white; color: #0f172a; padding: 12px 25px; 
+        border-radius: 50px; text-decoration: none; font-weight: 700;
+        transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .btn-add-product:hover { background: #f8fafc; transform: translateY(-2px); }
+
+    .back-link {
+        position: absolute; top: 20px; left: 20px; color: rgba(255,255,255,0.7); 
+        text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 5px;
+    }
+    .back-link:hover { color: white; }
+</style>
+
+<div class="store-header">
+    <a href="{% url 'home' %}" class="back-link">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        Back to Mall
+    </a>
+
+    <h1 class="store-title">{{ store.name }}</h1>
+    <div class="store-city"> {{ store.city }}</div>
+    
+    <div class="store-desc">
+        {{ store.description }}
+    </div>
+    
+    {% if request.user == store.owner %}
+        <div class="owner-bar">
+            <a href="{% url 'add_product' %}" class="btn-add-product">
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                Add New Product
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<div class="product-grid">
+    {% for product in products %}
+        <div class="product-card" {% if not product.is_available %}style="opacity: 0.75;"{% endif %}>
+            
+            {% if not product.is_available %}
+                <div class="badge badge-out">Out of Stock</div>
+            {% elif product.old_price %}
+                <div class="badge badge-sale">-{{ product.get_discount_percentage }}% OFF</div>
+            {% endif %}
+
+            <div class="p-image">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                {% else %}
+                    <div style="color: #cbd5e1; font-weight: 600; display: flex; flex-direction: column; align-items: center;">
+                        <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <span style="margin-top: 5px; font-size: 0.8rem;">No Image</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="p-details">
+                <div class="p-name">{{ product.name }}</div>
+                <div class="p-desc">{{ product.description }}</div>
+                
+                <div class="p-price-row">
+                    <span class="current-price">Rs. {{ product.price }}</span>
+                    {% if product.old_price %}
+                        <span class="old-price">Rs. {{ product.old_price }}</span>
+                    {% endif %}
+                </div>
+
+                <form action="{% url 'add_to_cart' product.id %}" method="POST" style="margin-top: auto;">
+                    {% csrf_token %}
+                    
+                    {% if product.is_available %}
+                        <button type="submit" class="btn-cart">Add to Cart</button>
+                    {% else %}
+                        <button type="button" class="btn-cart btn-disabled" disabled>Sold Out</button>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    {% empty %}
+        <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px;">
+            <div style="background: #f8fafc; display: inline-block; padding: 20px; border-radius: 50%; margin-bottom: 20px;">
+                <svg width="40" height="40" fill="none" stroke="#94a3b8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+            </div>
+            <h3 style="color: #334155; margin: 0 0 10px 0;">No products here yet</h3>
+            <p style="color: #64748b; margin: 0;">This store hasn't added any inventory.</p>
+            
+            {% if request.user == store.owner %}
+                <div style="margin-top: 25px;">
+                    <a href="{% url 'add_product' %}" style="color: #2563eb; font-weight: 700;">Add your first product &rarr;</a>
+                </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

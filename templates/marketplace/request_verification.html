@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block title %}Verify {{ store.name }} | Nukڑ.{% endblock %}
+
+{% block content %}
+
+<style>
+    :root {
+        --ti-navy: #0f172a;
+        --ti-navy-light: #1e293b;
+        --ti-blue: #3b82f6;
+        --ti-bg: #f8fafc;
+        --ti-border: #e2e8f0;
+        --ti-text: #334155;
+        --ti-text-muted: #64748b;
+    }
+
+    body { background-color: var(--ti-bg); font-family: 'Inter', sans-serif; }
+
+    .verify-wrapper {
+        min-height: 85vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+
+    /* Card Styling */
+    .ti-card {
+        background: white; border-radius: 24px;
+        width: 100%; max-width: 750px;
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
+        border: 1px solid var(--ti-border);
+        overflow: hidden;
+    }
+
+    /* Header */
+    .card-header {
+        background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+        padding: 40px 30px; text-align: center; color: white;
+        position: relative;
+    }
+    .card-header::after {
+        content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background-image: radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px);
+        background-size: 20px 20px; opacity: 0.3; pointer-events: none;
+    }
+    
+    .header-title { font-size: 2rem; font-weight: 800; margin: 0; letter-spacing: -1px; position: relative; z-index: 2; }
+    .header-sub { opacity: 0.8; margin: 8px 0 0; font-size: 1rem; position: relative; z-index: 2; }
+    .verified-badge { color: var(--ti-blue); background: white; padding: 2px 8px; border-radius: 4px; font-weight: 800; }
+
+    /* Body */
+    .card-body { padding: 40px; }
+
+    /* Privacy Alert */
+    .privacy-alert {
+        background: #eff6ff; border-left: 4px solid var(--ti-blue);
+        padding: 15px 20px; border-radius: 8px; margin-bottom: 30px;
+        color: #1e40af; font-size: 0.9rem; line-height: 1.5;
+    }
+
+    /* Form Layout */
+    .form-group { margin-bottom: 25px; }
+    .form-label { display: block; font-weight: 700; color: var(--ti-navy); margin-bottom: 8px; font-size: 0.95rem; }
+    .helper-text { font-size: 0.85rem; color: var(--ti-text-muted); margin-top: 6px; }
+
+    .ti-input, textarea, select, input[type="text"], input[type="email"] {
+        width: 100%; padding: 14px 18px; border-radius: 12px;
+        border: 2px solid var(--ti-border); background: #f8fafc;
+        font-size: 1rem; color: var(--ti-navy); transition: 0.2s;
+        box-sizing: border-box; outline: none;
+    }
+    .ti-input:focus {
+        background: white; border-color: var(--ti-blue);
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+
+    .row-split { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+    /* Document Section */
+    .doc-section {
+        background: #f8fafc; border: 1px dashed var(--ti-border);
+        border-radius: 16px; padding: 25px; margin-top: 30px;
+    }
+    .doc-title { font-size: 1.1rem; font-weight: 800; color: var(--ti-navy); margin: 0 0 20px 0; border-bottom: 1px solid var(--ti-border); padding-bottom: 10px; }
+
+    input[type="file"]::file-selector-button {
+        padding: 8px 16px; border-radius: 8px; background: var(--ti-navy);
+        color: white; font-weight: 700; border: none; margin-right: 15px;
+        cursor: pointer; transition: 0.2s; font-size: 0.85rem;
+    }
+    input[type="file"]::file-selector-button:hover { background: var(--ti-navy-light); }
+
+    /* Buttons */
+    .btn-submit {
+        width: 100%; background: var(--ti-navy); color: white;
+        padding: 18px; border-radius: 14px; font-weight: 800; border: none;
+        cursor: pointer; font-size: 1.1rem; transition: 0.2s; margin-top: 30px;
+        box-shadow: 0 10px 20px rgba(15, 23, 42, 0.2);
+    }
+    .btn-submit:hover { background: var(--ti-navy-light); transform: translateY(-2px); }
+
+    .btn-cancel {
+        display: block; text-align: center; margin-top: 20px;
+        color: var(--ti-text-muted); font-weight: 600; text-decoration: none;
+        font-size: 0.9rem; transition: 0.2s;
+    }
+    .btn-cancel:hover { color: var(--ti-navy); text-decoration: underline; }
+
+    @media (max-width: 650px) {
+        .row-split { grid-template-columns: 1fr; }
+        .card-body { padding: 25px; }
+    }
+</style>
+
+<div class="verify-wrapper">
+    <div class="ti-card">
+        
+        <div class="card-header">
+            <h1 class="header-title">Request Verification</h1>
+            <p class="header-sub">
+                Get the <span class="verified-badge">Verified Badge ✅</span> to build trust with customers.
+            </p>
+        </div>
+
+        <div class="card-body">
+            
+            <div class="privacy-alert">
+                <strong>🔒 Privacy Note:</strong> Your CNIC and personal details are strictly confidential. They are only used for identity verification and will never be shared publicly.
+            </div>
+
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label class="form-label">Full Legal Name</label>
+                    {{ form.full_name }}
+                    <div class="helper-text">Must match the name on your CNIC.</div>
+                </div>
+
+                <div class="row-split">
+                    <div class="form-group">
+                        <label class="form-label">CNIC Number</label>
+                        {{ form.cnic_number }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Contact Number</label>
+                        {{ form.contact_number }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Official Email Address</label>
+                    {{ form.email }}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Physical Office Address</label>
+                    {{ form.office_address }}
+                    <div class="helper-text">If you operate from home, please provide your home address.</div>
+                </div>
+
+                <div class="doc-section">
+                    <h3 class="doc-title">Identity Documents</h3>
+                    
+                    <div class="row-split">
+                        <div class="form-group">
+                            <label class="form-label">CNIC Front Side</label>
+                            {{ form.cnic_front }}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">CNIC Back Side</label>
+                            {{ form.cnic_back }}
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">Submit for Review</button>
+                
+                <a href="{% url 'store_dashboard' store.id %}" class="btn-cancel">
+                    Cancel and return to dashboard
+                </a>
+
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Auto-Style Inputs just in case
+    document.addEventListener("DOMContentLoaded", function() {
+        const inputs = document.querySelectorAll('input[type="text"], input[type="email"], textarea');
+        inputs.forEach(el => {
+            if(!el.classList.contains('ti-input')) el.classList.add('ti-input');
+        });
+    });
+</script>
+
+{% endblock %}

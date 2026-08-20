@@ -1,0 +1,498 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Messages | Nukڑ. Titanium Inbox{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --ti-navy: #0f172a;
+        --ti-navy-light: #1e293b;
+        --ti-blue: #2563eb;
+        --ti-bg: #f8fafc;
+        --ti-white: #ffffff;
+        --ti-glass: rgba(255, 255, 255, 0.9);
+        --ti-danger: #ef4444;
+        --ti-border: #e2e8f0;
+        --ti-shadow: 0 20px 50px -12px rgba(15, 23, 42, 0.1);
+        --ti-text-main: #1e293b;
+        --ti-text-muted: #64748b;
+    }
+
+    /* 🚫 HIDE BROWSER ALERTS & SYSTEM NOTIFICATIONS */
+    .messages-container, .alert, .django-messages, [class*="alert-"] { 
+        display: none !important; 
+        visibility: hidden !important;
+    }
+
+    body { background-color: var(--ti-bg); }
+
+    /* 1. LAYOUT ARCHITECTURE */
+    .inbox-viewport {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 0 20px;
+        animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .inbox-card {
+        background: var(--ti-white);
+        border-radius: 32px;
+        border: 1px solid var(--ti-border);
+        box-shadow: var(--ti-shadow);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        min-height: 600px;
+    }
+
+    /* 2. INBOX HEADER */
+    .inbox-header {
+        padding: 40px 40px 30px;
+        border-bottom: 1px solid var(--ti-border);
+        background: var(--ti-white);
+    }
+
+    .header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .header-title h2 {
+        font-size: 2rem;
+        font-weight: 900;
+        color: var(--ti-navy);
+        margin: 0;
+        letter-spacing: -0.04em;
+    }
+
+    /* 3. TITANIUM TAB NAVIGATION */
+    .ti-tabs {
+        display: flex;
+        gap: 12px;
+        background: var(--ti-bg);
+        padding: 6px;
+        border-radius: 100px;
+        width: fit-content;
+    }
+
+    .ti-tab-btn {
+        padding: 10px 24px;
+        border-radius: 100px;
+        border: none;
+        background: transparent;
+        color: var(--ti-text-muted);
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .ti-tab-btn.active {
+        background: var(--ti-white);
+        color: var(--ti-navy);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .badge-count {
+        background: var(--ti-navy);
+        color: white;
+        font-size: 0.7rem;
+        padding: 2px 8px;
+        border-radius: 50px;
+    }
+
+    /* 4. CHAT LIST ENGINE */
+    .chat-list-container {
+        flex: 1;
+        background: var(--ti-white);
+    }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; animation: fadeIn 0.4s ease; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .chat-item {
+        display: flex;
+        align-items: center;
+        padding: 24px 40px;
+        border-bottom: 1px solid #f8fafc;
+        text-decoration: none;
+        color: inherit;
+        transition: 0.2s;
+        position: relative;
+    }
+
+    .chat-item:hover {
+        background: #fbfcfe;
+    }
+
+    /* 💎 ROBUST AVATAR SYSTEM (STORES & CUSTOMERS) */
+    .avatar-wrapper { position: relative; margin-right: 20px; }
+    
+    .ti-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 20px;
+        object-fit: cover;
+        border: 2px solid var(--ti-white);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    .placeholder-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 20px;
+        background: var(--ti-navy);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1.4rem;
+    }
+
+    .verify-dot {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        width: 20px;
+        height: 20px;
+        background: var(--ti-blue);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        border: 2px solid white;
+        box-shadow: 0 2px 5px rgba(37, 99, 235, 0.3);
+    }
+
+    /* 5. INFORMATION GRID */
+    .chat-info { flex: 1; min-width: 0; }
+    
+    .chat-name-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+    }
+
+    .chat-name {
+        font-weight: 800;
+        color: var(--ti-navy);
+        font-size: 1.15rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .chat-time {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--ti-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .chat-preview {
+        font-size: 0.95rem;
+        color: var(--ti-text-muted);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .status-text {
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+
+    /* 6. DELETE ENGINE (Localhost Alert Fixed) */
+    .delete-trigger {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        border: none;
+        background: transparent;
+        color: #cbd5e1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-left: 15px;
+        cursor: pointer;
+    }
+    .delete-trigger:hover {
+        background: #fef2f2;
+        color: var(--ti-danger);
+        transform: rotate(10deg);
+    }
+
+    /* 7. EMPTY STATES */
+    .empty-state {
+        padding: 120px 40px;
+        text-align: center;
+    }
+    .empty-icon {
+        font-size: 4.5rem;
+        color: #e2e8f0;
+        margin-bottom: 25px;
+    }
+    .empty-state h4 { font-weight: 900; color: var(--ti-navy); margin-bottom: 12px; font-size: 1.5rem; }
+    .empty-state p { color: var(--ti-text-muted); font-size: 1rem; max-width: 300px; margin: 0 auto; }
+
+    /* 8. THE TITANIUM MODAL SYSTEM (Custom Deletion) */
+    .ti-modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        z-index: 10000;
+        display: none; align-items: center; justify-content: center;
+        animation: fadeIn 0.3s;
+    }
+    .ti-modal-box {
+        background: white;
+        width: 90%;
+        max-width: 420px;
+        border-radius: 36px;
+        padding: 45px;
+        text-align: center;
+        box-shadow: 0 40px 80px -20px rgba(0,0,0,0.3);
+        transform: translateY(30px);
+        transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .ti-modal-overlay.active { display: flex; }
+    .ti-modal-overlay.active .ti-modal-box { transform: translateY(0); }
+
+    .modal-icon-warn {
+        width: 80px; height: 80px; border-radius: 50%;
+        background: #fef2f2; color: var(--ti-danger);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2rem; margin: 0 auto 30px;
+        animation: pulseDanger 2s infinite;
+    }
+    @keyframes pulseDanger {
+        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2); }
+        70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    .modal-btns { display: flex; gap: 15px; margin-top: 35px; }
+    .ti-btn {
+        flex: 1; padding: 18px; border-radius: 20px; font-weight: 800;
+        border: none; cursor: pointer; transition: 0.3s; font-size: 1rem;
+    }
+    .ti-btn-cancel { background: var(--ti-bg); color: var(--ti-navy); }
+    .ti-btn-danger { background: var(--ti-danger); color: white; box-shadow: 0 10px 25px rgba(239, 68, 68, 0.25); }
+    .ti-btn:hover { transform: translateY(-3px); filter: brightness(1.05); }
+
+</style>
+
+<div class="inbox-viewport">
+    <div class="inbox-card">
+        
+        <div class="inbox-header">
+            <div class="header-top">
+                <div class="header-title">
+                    <h2>Messages</h2>
+                </div>
+            </div>
+
+            <div class="ti-tabs">
+                <button class="ti-tab-btn active" onclick="switchInbox('buying', this)">
+                    <i class="fas fa-shopping-bag"></i> Shopping
+                </button>
+                {% if owner_chats %}
+                <button class="ti-tab-btn" onclick="switchInbox('selling', this)">
+                    <i class="fas fa-store"></i> Selling
+                    <span class="badge-count">{{ owner_chats|length }}</span>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="chat-list-container">
+            
+            <div id="buying-pane" class="tab-pane active">
+                {% if customer_chats %}
+                    {% for chat in customer_chats %}
+                    <div class="chat-item-wrapper" id="chat-row-{{ chat.id }}">
+                        <a href="{% url 'chat_room' chat.id %}" class="chat-item">
+                            <div class="avatar-wrapper">
+                                {% if chat.store.image %}
+                                    <img src="{{ chat.store.image.url }}" class="ti-avatar">
+                                {% else %}
+                                    <div class="placeholder-avatar">{{ chat.store.name|slice:":1"|upper }}</div>
+                                {% endif %}
+                                
+                                {% if chat.store.is_verified %}
+                                    <div class="verify-dot"><i class="fas fa-check"></i></div>
+                                {% endif %}
+                            </div>
+
+                            <div class="chat-info">
+                                <div class="chat-name-row">
+                                    <span class="chat-name">
+                                        {{ chat.store.name }}
+                                        {% if chat.store.is_verified %}
+                                            <i class="fas fa-check-circle" style="color:var(--ti-blue); font-size:0.9rem;"></i>
+                                        {% endif %}
+                                    </span>
+                                    <span class="chat-time">{{ chat.updated_at|date:"M d" }}</span>
+                                </div>
+                                <div class="chat-preview">
+                                    <span>Continue conversation...</span>
+                                    <button class="delete-trigger" onclick="event.preventDefault(); triggerDelete('{{ chat.id }}')">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-comment-slash"></i></div>
+                        <h4>No messages yet</h4>
+                        <p>Start a conversation with a seller to see it here.</p>
+                        <a href="{% url 'home' %}" class="btn btn-primary rounded-pill px-4 mt-4 fw-bold">Explore Marketplace</a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div id="selling-pane" class="tab-pane">
+                {% if owner_chats %}
+                    {% for chat in owner_chats %}
+                    <div class="chat-item-wrapper" id="chat-row-{{ chat.id }}">
+                        <a href="{% url 'chat_room' chat.id %}" class="chat-item">
+                            <div class="avatar-wrapper">
+                                {% if chat.customer.userprofile.image %}
+                                    <img src="{{ chat.customer.userprofile.image.url }}" class="ti-avatar">
+                                {% elif chat.customer.socialaccount_set.all.0.get_avatar_url %}
+                                    <img src="{{ chat.customer.socialaccount_set.all.0.get_avatar_url }}" class="ti-avatar">
+                                {% else %}
+                                    <div class="placeholder-avatar" style="background: var(--ti-blue);">{{ chat.customer.username|slice:":1"|upper }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="chat-info">
+                                <div class="chat-name-row">
+                                    <span class="chat-name">{{ chat.customer.username }}</span>
+                                    <span class="chat-time">{{ chat.updated_at|date:"h:i A" }}</span>
+                                </div>
+                                <div class="chat-preview">
+                                    <span class="status-text text-primary">New Store Inquiry</span>
+                                    <button class="delete-trigger" onclick="event.preventDefault(); triggerDelete('{{ chat.id }}')">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-store-slash"></i></div>
+                        <h4>Quiet today</h4>
+                        <p>Customer inquiries for your store will appear here automatically.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="ti-modal-overlay" id="delete-modal">
+    <div class="ti-modal-box">
+        <div class="modal-icon-warn">
+            <i class="fas fa-trash-alt"></i>
+        </div>
+        <h3 style="font-weight: 900; color: var(--ti-navy); letter-spacing: -0.02em; font-size: 1.6rem;">Delete Conversation?</h3>
+        <p style="color: var(--ti-text-muted); margin-top: 15px; line-height: 1.7; font-size: 1.05rem;">
+            This will permanently erase all messages and clear this chat from your history. This action cannot be undone.
+        </p>
+        
+        <div class="modal-btns">
+            <button class="ti-btn ti-btn-cancel" onclick="closeModal()">Go Back</button>
+            <button class="ti-btn ti-btn-danger" id="confirm-delete-btn">Delete Permanently</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let activeChatId = null;
+
+    // 1. TAB ENGINE
+    function switchInbox(pane, btn) {
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.ti-tab-btn').forEach(b => b.classList.remove('active'));
+        
+        document.getElementById(pane + '-pane').classList.add('active');
+        btn.classList.add('active');
+    }
+
+    // 2. CUSTOM MODAL ENGINE
+    const modal = document.getElementById('delete-modal');
+
+    function triggerDelete(chatId) {
+        activeChatId = chatId;
+        modal.classList.add('active');
+    }
+
+    function closeModal() {
+        modal.classList.remove('active');
+        activeChatId = null;
+    }
+
+    // 3. DATABASE SYNC & OPTIMISTIC DELETION
+    document.getElementById('confirm-delete-btn').onclick = function() {
+        if (!activeChatId) return;
+
+        const deleteUrl = `/chat/delete/${activeChatId}/`;
+        
+        // Optimistic UI Animation
+        const row = document.getElementById('chat-row-' + activeChatId);
+        if (row) {
+            row.style.transition = '0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+            row.style.transform = 'translateX(80px)';
+            row.style.opacity = '0';
+            setTimeout(() => row.remove(), 500);
+        }
+
+        // Permanent Database Sync
+        window.location.href = deleteUrl;
+        
+        closeModal();
+    };
+
+    // Close on outside click
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            closeModal();
+        }
+    }
+
+    // ESC Key Support
+    document.addEventListener('keydown', (e) => {
+        if (e.key === "Escape") closeModal();
+    });
+</script>
+{% endblock %}

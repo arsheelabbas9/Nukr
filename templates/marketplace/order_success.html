@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order Confirmed | {{ store.name }}{% endblock %}
+
+{% block content %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+    /* ================= 1. TITANIUM VARIABLES ================= */
+    :root {
+        --ti-navy: #0f172a;
+        --ti-bg: #f1f5f9;
+        --ti-paper: #ffffff;
+        --ti-ink: #1e293b;
+        --ti-border: #e2e8f0;
+        --ti-red: #ef4444;
+        --ti-green: #10b981;
+        --ti-blue: #3b82f6;
+    }
+
+    body { background-color: var(--ti-bg); font-family: 'Inter', sans-serif; }
+
+    .success-wrapper {
+        min-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+
+    /* ================= 2. RECEIPT PAPER STYLE ================= */
+    .receipt-paper {
+        background: var(--ti-paper);
+        width: 100%;
+        max-width: 420px;
+        padding: 40px 30px;
+        position: relative;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        font-family: 'Courier Prime', 'Courier New', monospace; /* Thermal Look */
+        color: var(--ti-ink);
+        margin-bottom: 30px;
+        border-top: 5px solid var(--ti-navy);
+    }
+
+    /* Zig-Zag Cut Effect */
+    .receipt-paper::after {
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        width: 100%;
+        height: 20px;
+        background: linear-gradient(45deg, transparent 33.333%, var(--ti-bg) 33.333%, var(--ti-bg) 66.667%, transparent 66.667%), 
+                    linear-gradient(-45deg, transparent 33.333%, var(--ti-bg) 33.333%, var(--ti-bg) 66.667%, transparent 66.667%);
+        background-size: 20px 40px;
+        background-position: 0 -20px;
+        z-index: 5;
+    }
+
+    /* Header Section */
+    .r-header { text-align: center; margin-bottom: 25px; }
+    .r-brand { font-size: 1.6rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+    .r-meta { font-size: 0.85rem; opacity: 0.7; margin-bottom: 5px; }
+    
+    /* 💎 UNIFIED ID HIGHLIGHT */
+    .order-id-pill {
+        display: inline-block;
+        background: #f1f5f9;
+        padding: 4px 12px;
+        border-radius: 4px;
+        font-weight: 700;
+        margin-top: 5px;
+        border: 1px dashed #cbd5e1;
+    }
+
+    /* Success Icon & Status */
+    .status-area { text-align: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 2px dashed #cbd5e1; }
+    .check-icon { 
+        width: 40px; height: 40px; background: #dcfce7; color: #16a34a; 
+        border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+        margin: 0 auto 10px; 
+    }
+    .status-text { font-size: 1.3rem; font-weight: 800; color: var(--ti-navy); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Info Rows */
+    .r-row { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 8px; }
+    .r-label { font-weight: 400; opacity: 0.8; }
+    .r-val { font-weight: 700; text-align: right; }
+
+    /* Bank Alert Box */
+    .bank-alert {
+        background: #eff6ff; border: 1px dashed #bfdbfe; 
+        padding: 15px; margin: 20px 0; font-family: 'Inter', sans-serif;
+        font-size: 0.85rem; line-height: 1.5; color: #1e40af; border-radius: 8px;
+    }
+    .ba-title { font-weight: 700; display: block; margin-bottom: 4px; text-transform: uppercase; font-size: 0.75rem; }
+
+    /* Item Section */
+    .item-box {
+        border-top: 2px dashed #cbd5e1; border-bottom: 2px dashed #cbd5e1;
+        padding: 15px 0; margin: 15px 0;
+    }
+    .item-row-wrapper {
+        margin-bottom: 15px;
+        border-bottom: 1px dotted #e2e8f0;
+        padding-bottom: 10px;
+    }
+    .item-row-wrapper:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
+
+    .item-name { font-weight: 700; display: block; margin-bottom: 4px; }
+    .item-meta { font-size: 0.8rem; opacity: 0.7; }
+
+    /* Totals */
+    .r-total-row { 
+        display: flex; justify-content: space-between; 
+        font-size: 1.3rem; font-weight: 900; margin-top: 15px; padding-top: 15px; 
+        border-top: 2px solid var(--ti-ink);
+    }
+
+    /* Payment Screenshot */
+    .r-proof { margin-top: 25px; text-align: center; }
+    .r-proof img {
+        width: 100%; border: 4px solid #e2e8f0; border-radius: 8px;
+        filter: grayscale(100%) contrast(1.1);
+    }
+    .r-proof-label { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; display: block; letter-spacing: 1px;}
+
+    /* Footer */
+    .r-footer { text-align: center; margin-top: 30px; font-size: 0.75rem; opacity: 0.6; }
+    .barcode {
+        height: 35px; background: repeating-linear-gradient(to right, #000, #000 2px, #fff 2px, #fff 4px);
+        width: 70%; margin: 15px auto 0;
+    }
+
+    /* ================= 3. ACTION BUTTONS ================= */
+    .action-container {
+        width: 100%; max-width: 420px;
+        display: flex; flex-direction: column; gap: 10px;
+    }
+
+    .action-row { display: flex; gap: 10px; width: 100%; }
+    
+    .btn {
+        flex: 1; padding: 14px; border-radius: 12px; font-family: 'Inter', sans-serif;
+        font-weight: 700; text-align: center; text-decoration: none; border: none; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;
+        font-size: 0.95rem;
+    }
+    
+    /* Button Variants */
+    .btn-save { background: var(--ti-navy); color: white; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.2); }
+    .btn-save:hover { background: #1e293b; transform: translateY(-2px); color: white; }
+    
+    .btn-home { background: white; color: var(--ti-navy); border: 2px solid #e2e8f0; }
+    .btn-home:hover { background: #f8fafc; border-color: var(--ti-navy); }
+
+    .btn-chat { 
+        background: white; color: var(--ti-blue); border: 2px solid var(--ti-blue); 
+        width: 100%; /* Full width for emphasis */
+    }
+    .btn-chat:hover { background: #eff6ff; transform: translateY(-2px); }
+
+</style>
+
+<div class="success-wrapper">
+
+    <div id="receipt-element" class="receipt-paper">
+        
+        <div class="r-header">
+            <div class="r-brand">{{ store.name }}</div>
+            <div class="r-meta">{{ orders.0.created_at|date:"M d, Y - h:i A" }}</div>
+            <div class="order-id-pill">ORDER ID: #{{ group_id }}</div>
+        </div>
+
+        <div class="status-area">
+            <div class="check-icon">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <div class="status-text">Order Confirmed</div>
+        </div>
+
+        <div class="r-row">
+            <span class="r-label">Customer</span>
+            <span class="r-val">{{ orders.0.shipping_name }}</span>
+        </div>
+        <div class="r-row">
+            <span class="r-label">Payment</span>
+            <span class="r-val">
+                {% if 'COD' in orders.0.payment_method_selected %}
+                    Cash on Delivery
+                {% else %}
+                    Online Transfer
+                {% endif %}
+            </span>
+        </div>
+
+        {% if 'ONLINE' in orders.0.payment_method_selected %}
+            <div class="bank-alert">
+                <span class="ba-title">ℹ️ Payment Verification Pending</span>
+                We have received your screenshot. Your order is confirmed and will be processed once the payment of <strong>Rs. {{ grand_total|floatformat:0 }}</strong> is verified.
+            </div>
+        {% endif %}
+
+        <div class="item-box">
+            {% for item in orders %}
+            <div class="item-row-wrapper">
+                <div class="r-row" style="margin-bottom:2px;">
+                    <span class="item-name">{{ item.product.name }}</span>
+                    <span class="r-val">{{ item.subtotal_price|floatformat:0 }}</span>
+                </div>
+                <div class="r-row">
+                    <span class="item-meta">
+                        {% if item.product.collection %}
+                            {{ item.product.collection.name }} | 
+                        {% endif %}
+                        Variant: {{ item.selected_variant }}
+                    </span>
+                    <span class="r-val">x{{ item.quantity }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="r-row">
+            <span class="r-label">Subtotal</span>
+            <span class="r-val">{{ subtotal|floatformat:0 }}</span> 
+        </div>
+        
+        {% if discount_amount > 0 %}
+        <div class="r-row">
+            <span class="r-label">Discount</span>
+            <span class="r-val" style="color:var(--ti-red);">-{{ discount_amount|floatformat:0 }}</span>
+        </div>
+        {% endif %}
+
+        <div class="r-row">
+            <span class="r-label">Delivery Fee</span>
+            <span class="r-val">{{ delivery_fee|floatformat:0 }}</span>
+        </div>
+
+        <div class="r-total-row">
+            <span>
+                {% if 'COD' in orders.0.payment_method_selected %}
+                    AMOUNT DUE
+                {% else %}
+                    TOTAL PAID
+                {% endif %}
+            </span>
+            <span>Rs. {{ grand_total|floatformat:0 }}</span>
+        </div>
+
+        {% if 'ONLINE' in orders.0.payment_method_selected and orders.0.payment_screenshot %}
+            <div class="r-proof">
+                <span class="r-proof-label">Transaction Proof Attached</span>
+                <img src="{{ orders.0.payment_screenshot.url }}" alt="Payment Proof">
+            </div>
+        {% endif %}
+
+        <div class="r-footer">
+            Thank you for shopping at {{ store.name }}.<br>
+            Contact: {{ store.owner.email }}
+            <div class="barcode"></div>
+        </div>
+
+    </div>
+
+    <div class="action-container">
+        <a href="{% url 'start_chat' store.id %}" class="btn btn-chat">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+            Chat with Seller about Order
+        </a>
+
+        <div class="action-row">
+            <a href="{% url 'store_detail' store.id %}" class="btn btn-home">
+                Continue Shopping
+            </a>
+            <button onclick="downloadReceipt()" class="btn btn-save">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                Save Receipt
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function downloadReceipt() {
+        const element = document.getElementById('receipt-element');
+        
+        // 💎 Dynamic Height Calculation for Perfect PDF
+        // Convert pixel height to inches (96px = 1 inch approx) and add padding buffer
+        const heightInInches = (element.offsetHeight / 96) + 0.5;
+        
+        const opt = {
+            margin:       0,
+            filename:     'Receipt_Order_{{ group_id }}.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
+            jsPDF:        { 
+                unit: 'in', 
+                // [Width, Dynamic Height]
+                // 4.5 inches is our fixed width for the thermal look
+                format: [5, heightInInches], 
+                orientation: 'portrait' 
+            } 
+        };
+
+        html2pdf().set(opt).from(element).save();
+    }
+</script>
+
+{% endblock %}

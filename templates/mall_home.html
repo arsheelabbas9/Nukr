@@ -1,0 +1,595 @@
+{% extends 'marketplace/base.html' %}
+{% load static %}
+
+{% block title %}Nukr. | The Professional Marketplace{% endblock %}
+
+{% block content %}
+
+<style>
+    /* ==========================================================================
+       1. TITANIUM THEME VARIABLES
+       ========================================================================== */
+    :root {
+        --ti-navy: #0f172a;
+        --ti-navy-light: #1e293b;
+        --ti-blue: #3b82f6;
+        --ti-gold: #f59e0b;
+        --ti-green: #10b981;
+        --ti-bg: #f8fafc;
+        --ti-border: #e2e8f0;
+        --ti-text: #334155;
+        --ti-text-muted: #64748b;
+        --ti-shadow: 0 10px 30px -5px rgba(0,0,0,0.1);
+        --ti-shadow-hover: 0 20px 40px -10px rgba(0,0,0,0.15);
+    }
+
+    body { background-color: var(--ti-bg); font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+
+    /* ==========================================================================
+       2. HERO SECTION STYLING
+       ========================================================================== */
+    .mall-hero {
+        /* Background is handled INLINE in the HTML below to force update */
+        padding: 90px 20px 140px; 
+        text-align: center;
+        border-radius: 0 0 40px 40px;
+        box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.4);
+        margin-bottom: 60px;
+        position: relative;
+        overflow: hidden;
+        background-color: var(--ti-navy); /* Fallback color */
+    }
+
+    /* Dark Overlay for Text Readability */
+    .mall-hero::before {
+        content: ''; 
+        position: absolute; 
+        top: 0; left: 0; right: 0; bottom: 0;
+        /* Dark Navy Overlay at 65% opacity */
+        background: rgba(2, 6, 23, 0.65); 
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    /* Content Z-Index Fixes */
+    .hero-content-wrapper {
+        position: relative;
+        z-index: 2; /* Ensures text sits on TOP of the overlay */
+    }
+
+    .hero-logo {
+        color: white; 
+        font-size: 4rem; 
+        font-weight: 900; 
+        margin: 0 0 15px; 
+        letter-spacing: -2px; 
+        text-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    }
+    
+    .hero-subtitle {
+        color: #f1f5f9; 
+        font-size: 1.2rem; 
+        max-width: 650px; 
+        margin: 0 auto 45px; 
+        line-height: 1.6; 
+        font-weight: 500;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+
+    /* Search Pill Container */
+    .search-pill-container {
+        max-width: 750px; 
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.95); 
+        border-radius: 60px; 
+        padding: 10px;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+        display: flex; 
+        align-items: center;
+        border: 4px solid rgba(255,255,255,0.25);
+        backdrop-filter: blur(12px);
+    }
+    
+    .search-input {
+        flex-grow: 1; 
+        border: none; 
+        padding: 16px 30px;
+        font-size: 1.15rem; 
+        outline: none; 
+        background: transparent; 
+        color: var(--ti-navy); 
+        width: 100%;
+        font-weight: 500;
+    }
+    .search-input::placeholder { color: #94a3b8; font-weight: 400; }
+    
+    .search-btn {
+        background: var(--ti-blue); 
+        color: white; 
+        border: none;
+        padding: 16px 40px; 
+        border-radius: 50px; 
+        font-weight: 700;
+        cursor: pointer; 
+        transition: all 0.2s ease; 
+        font-size: 1.05rem;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    }
+    .search-btn:hover { 
+        background: #2563eb; 
+        transform: translateY(-2px); 
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5); 
+    }
+
+    /* ==========================================================================
+       3. MAIN CONTENT & SORTING
+       ========================================================================== */
+    .mall-container {
+        max-width: 1280px; 
+        margin: -90px auto 60px; /* Pulls content up over hero */
+        padding: 0 25px;
+        position: relative; 
+        z-index: 10;
+    }
+
+    /* Controls Header */
+    .section-header {
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center;
+        margin-bottom: 35px; 
+        flex-wrap: wrap; 
+        gap: 20px;
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(15px);
+        padding: 25px 30px; 
+        border-radius: 24px;
+        border: 1px solid white;
+        box-shadow: 0 15px 40px -10px rgba(0,0,0,0.08);
+    }
+    
+    .header-title h2 {
+        font-size: 1.5rem; 
+        font-weight: 800; 
+        color: var(--ti-navy); 
+        margin: 0;
+        display: flex; 
+        align-items: center; 
+        gap: 12px;
+    }
+    
+    .highlight-text { 
+        color: var(--ti-blue); 
+        text-decoration: underline; 
+        text-decoration-thickness: 3px; 
+        text-underline-offset: 4px;
+    }
+    
+    .clear-search {
+        font-size: 0.9rem; 
+        color: var(--ti-text-muted); 
+        text-decoration: none; 
+        font-weight: 600; 
+        padding: 8px 16px; 
+        background: #f1f5f9; 
+        border-radius: 10px;
+        transition: 0.2s;
+        border: 1px solid var(--ti-border);
+    }
+    .clear-search:hover { 
+        background: #fee2e2; 
+        color: #dc2626; 
+        border-color: #fca5a5;
+    }
+
+    /* Sort Dropdown Styling */
+    .sort-wrapper { 
+        position: relative; 
+        display: flex; 
+        align-items: center; 
+        gap: 12px; 
+    }
+    .sort-label { 
+        font-weight: 700; 
+        color: var(--ti-text-muted); 
+        font-size: 0.95rem; 
+    }
+    
+    .sort-select {
+        appearance: none; 
+        -webkit-appearance: none;
+        background: white; 
+        border: 2px solid var(--ti-border);
+        padding: 14px 50px 14px 20px; 
+        border-radius: 14px;
+        font-weight: 700; 
+        color: var(--ti-navy); 
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.03); 
+        transition: 0.2s; 
+        font-size: 0.95rem;
+    }
+    .sort-select:hover { 
+        border-color: var(--ti-blue); 
+        transform: translateY(-2px); 
+    }
+    .sort-select:focus { 
+        outline: none; 
+        border-color: var(--ti-navy); 
+        box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.1); 
+    }
+    
+    .sort-arrow {
+        position: absolute; 
+        right: 20px; 
+        top: 50%; 
+        transform: translateY(-50%);
+        pointer-events: none; 
+        color: var(--ti-text); 
+        font-size: 0.8rem;
+    }
+
+    /* ==========================================================================
+       4. STORE CARD GRID
+       ========================================================================== */
+    .store-grid {
+        display: grid; 
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); 
+        gap: 40px;
+    }
+
+    .store-card {
+        background: white; 
+        border-radius: 28px; 
+        overflow: hidden;
+        border: 1px solid var(--ti-border); 
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        box-shadow: var(--ti-shadow); 
+        display: flex; 
+        flex-direction: column;
+        text-decoration: none; 
+        color: inherit; 
+        height: 100%; 
+        position: relative;
+    }
+    .store-card:hover {
+        transform: translateY(-12px); 
+        box-shadow: var(--ti-shadow-hover);
+        border-color: #cbd5e1;
+    }
+
+    /* Cover Area */
+    .card-cover {
+        height: 160px; 
+        background: #f1f5f9; 
+        position: relative;
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        overflow: hidden;
+    }
+    .card-cover img.cover-img { 
+        width: 100%; 
+        height: 100%; 
+        object-fit: cover; 
+        transition: transform 0.6s ease;
+    }
+    .store-card:hover .cover-img { 
+        transform: scale(1.08); 
+    }
+    
+    .placeholder-icon { 
+        font-size: 4rem; 
+        opacity: 0.15; 
+        color: var(--ti-navy); 
+    }
+
+    /* Avatar Overlap */
+    .card-avatar {
+        width: 88px; 
+        height: 88px; 
+        border-radius: 24px; /* Squircle shape */
+        border: 5px solid white; 
+        object-fit: cover;
+        position: absolute; 
+        bottom: -44px; 
+        left: 25px;
+        background: #334155; 
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        color: white; 
+        font-weight: 800; 
+        font-size: 1.8rem; 
+        z-index: 2;
+        transition: transform 0.3s ease;
+    }
+    .store-card:hover .card-avatar {
+        transform: rotate(-5deg) scale(1.05);
+    }
+
+    /* Card Body */
+    .card-content { 
+        padding: 55px 28px 30px; 
+        flex-grow: 1; 
+        display: flex; 
+        flex-direction: column; 
+    }
+    
+    .card-head { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: flex-start; 
+        margin-bottom: 12px; 
+    }
+    
+    .store-name {
+        font-size: 1.4rem; 
+        font-weight: 800; 
+        color: var(--ti-navy); 
+        margin: 0;
+        display: flex; 
+        align-items: center; 
+        gap: 8px; 
+        line-height: 1.2;
+    }
+    .verified-icon { 
+        color: var(--ti-blue); 
+        width: 22px; 
+        height: 22px; 
+        flex-shrink: 0; 
+        filter: drop-shadow(0 2px 4px rgba(59, 130, 246, 0.3));
+    }
+
+    /* Rating Pill (Fixed Decimals) */
+    .rating-pill {
+        display: inline-flex; 
+        align-items: center; 
+        gap: 6px;
+        background: #fffbeb; 
+        color: #b45309; 
+        padding: 6px 14px;
+        border-radius: 30px; 
+        font-size: 0.9rem; 
+        font-weight: 800;
+        border: 1px solid #fcd34d; 
+        flex-shrink: 0;
+    }
+    .badge-new {
+        background: #dcfce7; 
+        color: #166534; 
+        padding: 6px 14px;
+        border-radius: 30px; 
+        font-size: 0.75rem; 
+        font-weight: 800; 
+        border: 1px solid #bbf7d0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Location Badges Logic */
+    .location-row { 
+        margin: 15px 0 20px; 
+        display: flex; 
+        flex-wrap: wrap; 
+        gap: 10px; 
+    }
+    
+    .loc-badge {
+        font-size: 0.8rem; 
+        font-weight: 700; 
+        padding: 8px 14px;
+        border-radius: 10px; 
+        display: inline-flex; 
+        align-items: center; 
+        gap: 6px;
+        letter-spacing: 0.3px;
+    }
+    
+    /* Nationwide Badge */
+    .loc-nationwide { 
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); 
+        color: #1d4ed8; 
+        border: 1px solid #bfdbfe; 
+    }
+    
+    /* Local Badge */
+    .loc-local { 
+        background: #f8fafc; 
+        color: var(--ti-text-muted); 
+        border: 1px solid var(--ti-border); 
+    }
+    
+    /* Secondary City Badge */
+    .loc-secondary { 
+        background: #f0fdf4; 
+        color: #15803d; 
+        border: 1px solid #bbf7d0; 
+    }
+
+    .store-desc {
+        color: var(--ti-text); 
+        font-size: 1rem; 
+        line-height: 1.6;
+        margin: 0; 
+        display: -webkit-box; 
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical; 
+        overflow: hidden; 
+        opacity: 0.85;
+    }
+
+    /* Empty State */
+    .empty-wrapper {
+        text-align: center; 
+        padding: 120px 20px;
+        background: white; 
+        border-radius: 32px; 
+        border: 2px dashed var(--ti-border);
+    }
+    .btn-clear {
+        display: inline-block; 
+        background: var(--ti-navy); 
+        color: white;
+        padding: 14px 35px; 
+        border-radius: 50px; 
+        text-decoration: none;
+        font-weight: 700; 
+        margin-top: 25px; 
+        transition: 0.2s;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.2);
+    }
+    .btn-clear:hover { 
+        background: var(--ti-navy-light); 
+        transform: translateY(-3px); 
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .mall-hero { padding-bottom: 120px; border-radius: 0 0 30px 30px; }
+        .hero-logo { font-size: 3rem; }
+        .mall-container { margin-top: -100px; padding: 0 15px; }
+        .section-header { flex-direction: column; align-items: flex-start; gap: 20px; }
+        .sort-wrapper { width: 100%; justify-content: space-between; }
+        .sort-select { width: 100%; }
+        .header-title h2 { font-size: 1.3rem; }
+        .store-grid { grid-template-columns: 1fr; gap: 30px; }
+    }
+</style>
+
+<div class="mall-hero" style="background: url('/marketplace/static/images/nukr_mall_bg.jpg') no-repeat center center !important; background-size: cover !important;">
+    
+    <div class="hero-content-wrapper">
+        <h1 class="hero-logo">Nukr.</h1>
+        <p class="hero-subtitle">The digital marketplace for professionals. Discover verified stores and premium local goods.</p>
+
+        <form method="get" action="{% url 'home' %}" class="search-pill-container">
+            <input type="text" name="q" value="{{ query }}" class="search-input" placeholder="Search stores, hoodies, or gadgets...">
+            <button type="submit" class="search-btn">Search</button>
+        </form>
+    </div>
+</div>
+
+<div class="mall-container">
+
+    <div class="section-header">
+        <div class="header-title">
+            <h2>
+                {% if query %}
+                    Results for "<span class="highlight-text">{{ query }}</span>"
+                    <a href="{% url 'home' %}" class="clear-search">Clear Filter</a>
+                {% else %}
+                    {% if request.COOKIES.nukr_city %}
+                        Stores in <span style="color:var(--ti-blue);">{{ request.COOKIES.nukr_city|title }}</span> & Nationwide
+                    {% else %}
+                        Featured Stores
+                    {% endif %}
+                {% endif %}
+            </h2>
+        </div>
+
+        <div class="sort-wrapper">
+            <span class="sort-label">Sort by:</span>
+            <div style="position:relative; flex-grow:1;">
+                <select class="sort-select" onchange="window.location.href=this.value">
+                    <option value="?sort=rating&q={{ query }}" {% if sort == 'rating' %}selected{% endif %}>⭐ Highest Rated</option>
+                    <option value="?sort=reviews&q={{ query }}" {% if sort == 'reviews' %}selected{% endif %}>💬 Most Reviewed</option>
+                    <option value="?sort=newest&q={{ query }}" {% if sort == 'newest' %}selected{% endif %}>🆕 Newest Added</option>
+                </select>
+                <span class="sort-arrow">▼</span>
+            </div>
+        </div>
+    </div>
+
+    {% if stores %}
+        <div class="store-grid">
+            {% for store in stores %}
+            <a href="{% url 'store_detail' store.id %}" class="store-card">
+                
+                <div class="store-cover">
+                    <div class="card-cover">
+                        {% if store.image %}
+                            <img src="{{ store.image.url }}" class="cover-img" alt="{{ store.name }}">
+                        {% else %}
+                            <span class="placeholder-icon">🏪</span>
+                        {% endif %}
+                        
+                        {% if store.image %}
+                            <img src="{{ store.image.url }}" class="card-avatar">
+                        {% else %}
+                            <div class="card-avatar">{{ store.name|slice:":1" }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card-content">
+                    <div class="card-head">
+                        <h3 class="store-name">
+                            {{ store.name }}
+                            {% if store.is_verified %}
+                                <svg class="verified-icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                            {% endif %}
+                        </h3>
+
+                        {% if store.avg_rating > 0 %}
+                            <div class="rating-pill">
+                                <span>⭐ {{ store.avg_rating|floatformat:1 }}</span>
+                                <span style="opacity:0.6; font-weight:400; color:#b45309;">({{ store.review_count }})</span>
+                            </div>
+                        {% else %}
+                            <span class="badge-new">NEW STORE</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="location-row">
+                        {% with user_city=request.COOKIES.nukr_city|default:""|lower store_city=store.city|lower secondary=store.secondary_cities|default:""|lower %}
+                            
+                            {% if store.deliver_nationwide %}
+                                <span class="loc-badge loc-nationwide">
+                                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    PK Nationwide
+                                </span>
+                            
+                            {% elif user_city and store_city == user_city %}
+                                <span class="loc-badge loc-local">
+                                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                    {{ store.city }} Only
+                                </span>
+                            
+                            {% elif user_city and user_city in secondary %}
+                                <span class="loc-badge loc-secondary">
+                                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 012-2v0a2 2 0 012 2m0 0a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2zm-9 0a2 2 0 012-2 2 2 0 012 2v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3z"/></svg>
+                                    Delivers to You
+                                </span>
+                            
+                            {% else %}
+                                <span class="loc-badge loc-local">📍 {{ store.city }}</span>
+                            {% endif %}
+
+                        {% endwith %}
+                    </div>
+
+                    <p class="store-desc">
+                        {{ store.description|default:"No description provided."|truncatechars:100 }}
+                    </p>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-wrapper">
+            <div style="font-size:3.5rem; opacity:0.3; margin-bottom:20px;">🔍</div>
+            <h3 style="color:var(--ti-navy); margin:0 0 10px; font-weight:800;">No stores found</h3>
+            <p style="color:var(--ti-text-muted); max-width:400px; margin:0 auto;">
+                We couldn't find any stores matching your criteria. Try adjusting your search terms or location.
+            </p>
+            {% if query %}
+                <a href="{% url 'home' %}" class="btn-clear">View All Stores</a>
+            {% endif %}
+        </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

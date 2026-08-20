@@ -1,0 +1,567 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Dashboard | {{ store.name }}{% endblock %}
+
+{% block content %}
+
+<style>
+    /* =========================================
+       TITANIUM DASHBOARD STYLING
+       ========================================= */
+    :root {
+        --ti-navy: #0f172a;
+        --ti-navy-light: #1e293b;
+        --ti-blue: #3b82f6;
+        --ti-green: #10b981;
+        --ti-gold: #f59e0b;
+        --ti-red: #ef4444;
+        --ti-bg: #f8fafc;
+        --ti-border: #e2e8f0;
+        --ti-text: #334155;
+        --ti-text-muted: #64748b;
+        --ti-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    body { background-color: var(--ti-bg); font-family: 'Inter', sans-serif; }
+
+    .dash-container {
+        max-width: 1300px; margin: 0 auto; padding: 0 20px 80px;
+    }
+
+    /* --- HERO HEADER --- */
+    .dash-hero {
+        background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+        color: white;
+        padding: 50px 30px 100px;
+        border-radius: 0 0 40px 40px;
+        margin-bottom: 60px;
+        box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.3);
+        display: flex; justify-content: space-between; align-items: center;
+        flex-wrap: wrap; gap: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    /* Subtle Grid Pattern */
+    .dash-hero::before {
+        content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background-image: radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px);
+        background-size: 30px 30px; opacity: 0.2; pointer-events: none;
+    }
+
+    .hero-title { position: relative; z-index: 2; }
+    .hero-title h1 { font-weight: 800; margin: 0; font-size: 2.2rem; letter-spacing: -1px; }
+    .hero-title p { opacity: 0.7; margin: 5px 0 0; font-size: 1rem; font-weight: 500; }
+
+    /* Category Tag in Header */
+    .header-cat-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: rgba(255, 255, 255, 0.15); 
+        backdrop-filter: blur(5px);
+        padding: 4px 12px; border-radius: 8px;
+        font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
+        margin-top: 10px; color: #bae6fd; border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .hero-actions { display: flex; gap: 15px; position: relative; z-index: 2; }
+
+    .btn-hero {
+        background: rgba(255,255,255,0.1); color: white;
+        padding: 12px 24px; border-radius: 12px; text-decoration: none;
+        font-weight: 700; display: flex; align-items: center; gap: 8px;
+        transition: 0.2s; backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.15); font-size: 0.9rem;
+    }
+    .btn-hero:hover { background: white; color: var(--ti-navy); transform: translateY(-2px); }
+    
+    .btn-hero.primary { background: white; color: var(--ti-navy); border-color: white; }
+    .btn-hero.primary:hover { background: #f1f5f9; }
+
+    /* --- STATS GRID --- */
+    .stats-grid {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 25px;
+        margin-top: -120px;
+        margin-bottom: 40px;
+        padding: 0 10px;
+        position: relative; z-index: 10;
+    }
+    .stat-card {
+        background: white; border-radius: 20px; padding: 25px;
+        box-shadow: var(--ti-shadow); border: 1px solid var(--ti-border);
+        transition: 0.3s; display: flex; flex-direction: column;
+    }
+    .stat-card:hover { transform: translateY(-5px); box-shadow: 0 20px 30px -10px rgba(0,0,0,0.1); border-color: var(--ti-blue); }
+    
+    .stat-icon-box {
+        width: 45px; height: 45px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem; margin-bottom: 15px;
+    }
+    .icon-rev { background: #ecfdf5; color: var(--ti-green); }
+    .icon-ord { background: #eff6ff; color: var(--ti-blue); }
+    .icon-rate { background: #fffbeb; color: var(--ti-gold); }
+    .icon-prod { background: #f1f5f9; color: var(--ti-text); }
+
+    .stat-label { font-size: 0.8rem; font-weight: 700; color: var(--ti-text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-value { font-size: 1.8rem; font-weight: 800; color: var(--ti-navy); margin-top: 5px; }
+
+    /* --- VERIFICATION BANNER --- */
+    .verify-banner {
+        background: white; border-radius: 20px; padding: 30px;
+        border-left: 6px solid var(--ti-blue); box-shadow: var(--ti-shadow);
+        margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center; 
+        flex-wrap: wrap; gap: 20px;
+    }
+    .verify-content h3 { margin: 0; font-weight: 800; color: var(--ti-navy); display: flex; align-items: center; gap: 10px; }
+    .verify-content p { margin: 5px 0 0; color: var(--ti-text-muted); font-size: 0.95rem; }
+    
+    .btn-verify {
+        background: var(--ti-navy); color: white; padding: 12px 25px; border-radius: 10px;
+        text-decoration: none; font-weight: 700; font-size: 0.9rem; transition: 0.2s;
+    }
+    .btn-verify:hover { background: var(--ti-navy-light); transform: translateY(-2px); }
+    .btn-pending { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; cursor: default; }
+    .btn-rejected { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+
+    /* --- PANELS & TABLES --- */
+    .dash-section {
+        background: white; border-radius: 24px; border: 1px solid var(--ti-border);
+        overflow: hidden; margin-bottom: 40px; box-shadow: var(--ti-shadow);
+    }
+    .section-header {
+        padding: 20px 30px; border-bottom: 1px solid var(--ti-border);
+        background: white; display: flex; justify-content: space-between; align-items: center;
+    }
+    .section-title { margin: 0; font-size: 1.1rem; font-weight: 800; color: var(--ti-navy); display: flex; align-items: center; gap: 10px; }
+    
+    .btn-add {
+        background: var(--ti-bg); border: 1px solid var(--ti-border); color: var(--ti-navy);
+        padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 700;
+        text-decoration: none; transition: 0.2s; display: flex; align-items: center; gap: 6px;
+    }
+    .btn-add:hover { background: var(--ti-navy); color: white; border-color: var(--ti-navy); }
+
+    /* 💎 NEW: TALASH BUTTON */
+    .btn-talash-action {
+        background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+        color: white; border: none; padding: 10px 20px; border-radius: 10px;
+        font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 8px;
+        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2); transition: 0.2s;
+    }
+    .btn-talash-action:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(22, 163, 74, 0.3); color: white; }
+
+    /* Table Styles */
+    .table-responsive { overflow-x: auto; }
+    .ti-table { width: 100%; border-collapse: collapse; }
+    .ti-table th {
+        text-align: left; padding: 15px 25px; color: var(--ti-text-muted); font-size: 0.75rem;
+        font-weight: 800; text-transform: uppercase; border-bottom: 2px solid var(--ti-bg);
+        background: white; letter-spacing: 0.5px;
+    }
+    .ti-table td {
+        padding: 15px 25px; border-bottom: 1px solid #f1f5f9;
+        color: var(--ti-text); vertical-align: middle; font-size: 0.9rem; font-weight: 500;
+    }
+    .ti-table tr:last-child td { border-bottom: none; }
+    .ti-table tr:hover td { background: #f8fafc; }
+
+    /* Status Badges */
+    .badge { padding: 4px 10px; border-radius: 30px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; display: inline-block; }
+    .st-confirmed { background: #eff6ff; color: #1e40af; }
+    .st-shipped { background: #f0fdf4; color: #15803d; }
+    .st-delivered { background: #ecfccb; color: #3f6212; }
+    .st-cancelled { background: #fef2f2; color: #991b1b; }
+    .st-active { background: #ecfdf5; color: #047857; }
+    .st-inactive { background: #f1f5f9; color: #64748b; }
+
+    /* Inline Forms */
+    .order-select {
+        padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1; 
+        font-size: 0.8rem; cursor: pointer; background-color: white; outline: none;
+    }
+    .btn-save-sm {
+        background: var(--ti-navy); color: white; border: none; padding: 6px 12px;
+        border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 700; margin-left: 5px;
+    }
+    .btn-save-sm:hover { background: var(--ti-navy-light); }
+
+    .action-link { color: var(--ti-blue); font-weight: 700; text-decoration: none; font-size: 0.85rem; }
+    .action-link:hover { text-decoration: underline; }
+    .action-delete { color: var(--ti-red); }
+
+    .split-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 40px; }
+
+    @media (max-width: 900px) {
+        .dash-hero { flex-direction: column; text-align: center; padding-bottom: 60px; }
+        .stats-grid { margin-top: -40px; grid-template-columns: 1fr; }
+        .split-grid { grid-template-columns: 1fr; }
+        .hero-actions { justify-content: center; }
+    }
+</style>
+
+<div class="dash-hero">
+    <div class="hero-title">
+        <h1>Store Dashboard</h1>
+        <p>Managing <strong>{{ store.name }}</strong></p>
+        
+        <div class="header-cat-badge">
+            <i class="fas fa-tag"></i> {{ store.get_category_display }}
+        </div>
+    </div>
+    
+    <div class="hero-actions">
+        <a href="{% url 'edit_store' store.id %}" class="btn-hero">
+            <i class="fas fa-cog"></i> Settings
+        </a>
+        <a href="{% url 'store_detail' store.id %}" class="btn-hero primary">
+            <i class="fas fa-external-link-alt"></i> View Store
+        </a>
+    </div>
+</div>
+
+<div class="dash-container">
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon-box icon-rev">💰</div>
+            <div>
+                <div class="stat-label">Total Revenue</div>
+                <div class="stat-value">Rs. {{ total_revenue|intcomma }}</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon-box icon-ord">📦</div>
+            <div>
+                <div class="stat-label">Total Orders</div>
+                <div class="stat-value">{{ total_orders }}</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon-box icon-rate">⭐</div>
+            <div>
+                <div class="stat-label">Store Rating</div>
+                <div class="stat-value" style="color:var(--ti-gold);">{{ store.average_rating|floatformat:1 }}</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon-box icon-prod">🏷️</div>
+            <div>
+                <div class="stat-label">Products</div>
+                <div class="stat-value">{{ products.count }}</div>
+            </div>
+        </div>
+    </div>
+
+    {% if not store.is_verified %}
+        <div class="verify-banner">
+            <div class="verify-content">
+                <h3>
+                    <svg width="24" height="24" fill="var(--ti-blue)" viewBox="0 0 20 20" style="margin-right:8px;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                    Get Verified Status
+                </h3>
+                <p>Unlock the blue tick and improve search ranking by verifying your identity.</p>
+            </div>
+            <div>
+                {% if store.verification %}
+                    {% if store.verification.status == 'pending' %}
+                        <button class="btn-verify btn-pending">⏳ Application Under Review</button>
+                    {% elif store.verification.status == 'rejected' %}
+                        <a href="{% url 'request_verification' store.id %}" class="btn-verify btn-rejected">❌ Rejected - Apply Again</a>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'request_verification' store.id %}" class="btn-verify">Apply for Verification &rarr;</a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="dash-section" style="border-left: 5px solid #16a34a;">
+        <div class="section-header">
+            <h3 class="section-title">
+                <i class="fas fa-search-location text-success"></i> Customer Leads (Talash)
+            </h3>
+            <a href="{% url 'talash_feed' %}" class="btn-talash-action">
+                Find Customers Now &rarr;
+            </a>
+        </div>
+        <div style="padding: 20px 30px; background: #f0fdf4;">
+            <p style="margin:0; color: #166534; font-size: 0.95rem;">
+                <strong>Pro Tip:</strong> Check the "Talash" feed daily. Customers in {{ store.city }} are posting requests for items like yours.
+            </p>
+        </div>
+    </div>
+
+    <div class="dash-section">
+        <div class="section-header">
+            <h3 class="section-title">Recent Orders</h3>
+        </div>
+        {% if orders %}
+            <div class="table-responsive">
+                <table class="ti-table">
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Products</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Update Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {# TITANIUM LOGIC: Group Orders by Group ID #}
+                        {% regroup orders by order_group_id as grouped_orders %}
+                        
+                        {% for group in grouped_orders %}
+                            
+                            {% if group.grouper %}
+                                {% with first_item=group.list.0 %}
+                                <tr class="order-row group-row">
+                                    <td style="font-family:monospace; font-weight:700;">
+                                        <a href="{% url 'manage_order' first_item.id %}" style="color:var(--ti-navy); text-decoration:underline;">
+                                            #{{ group.grouper }}
+                                        </a>
+                                        <div style="font-size:0.7rem; color:var(--ti-blue); margin-top:2px;">(Group Order)</div>
+                                    </td>
+                                    <td>{{ first_item.created_at|date:"M d" }}</td>
+                                    <td>
+                                        <div style="font-weight:700; color:var(--ti-navy);">{{ first_item.shipping_name }}</div>
+                                        <div style="font-size:0.8rem; color:var(--ti-text-muted);">{{ first_item.shipping_city }}</div>
+                                    </td>
+                                    <td>
+                                        <div style="display:flex; flex-direction:column; gap:4px;">
+                                            {% for item in group.list %}
+                                                <div style="font-size:0.85rem;">
+                                                    • {{ item.product.name|truncatechars:20 }} 
+                                                    <span style="font-size:0.75rem; color:#64748b;">
+                                                        ({{ item.selected_variant }}) x{{ item.quantity }}
+                                                    </span>
+                                                    <span class="hidden-price" data-price="{{ item.total_price }}" style="display:none;"></span>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                    <td style="font-weight:800; color:var(--ti-navy);">
+                                        <span class="row-total-display">Calculating...</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge st-{{ first_item.status|lower }}">{{ first_item.status }}</span>
+                                    </td>
+                                    <td>
+                                        <form action="{% url 'update_order_status' first_item.id %}" method="POST" style="display:flex; align-items:center;">
+                                            {% csrf_token %}
+                                            <select name="status" class="order-select">
+                                                <option value="Confirmed" {% if first_item.status == 'Confirmed' %}selected{% endif %}>Confirmed</option>
+                                                <option value="Shipped" {% if first_item.status == 'Shipped' %}selected{% endif %}>Shipped</option>
+                                                <option value="Delivered" {% if first_item.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                                                <option value="Cancelled" {% if first_item.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                                            </select>
+                                            <button type="submit" class="btn-save-sm">Save</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endwith %}
+
+                            {% else %}
+                                {% for order in group.list %}
+                                <tr class="order-row">
+                                    <td style="font-family:monospace; font-weight:700;">
+                                        <a href="{% url 'manage_order' order.id %}" style="color:var(--ti-navy); text-decoration:underline;">
+                                            #{{ order.id }}
+                                        </a>
+                                    </td>
+                                    <td>{{ order.created_at|date:"M d" }}</td>
+                                    <td>
+                                        <div style="font-weight:700; color:var(--ti-navy);">{{ order.shipping_name }}</div>
+                                        <div style="font-size:0.8rem; color:var(--ti-text-muted);">{{ order.shipping_city }}</div>
+                                    </td>
+                                    <td>
+                                        {{ order.product.name|truncatechars:25 }}
+                                        <span style="font-size:0.75rem; color:#64748b;">
+                                            ({{ order.selected_variant }}) x{{ order.quantity }}
+                                        </span>
+                                    </td>
+                                    <td style="font-weight:800; color:var(--ti-navy);">Rs. {{ order.total_price|intcomma }}</td>
+                                    <td>
+                                        <span class="badge st-{{ order.status|lower }}">{{ order.status }}</span>
+                                    </td>
+                                    <td>
+                                        <form action="{% url 'update_order_status' order.id %}" method="POST" style="display:flex; align-items:center;">
+                                            {% csrf_token %}
+                                            <select name="status" class="order-select">
+                                                <option value="Confirmed" {% if order.status == 'Confirmed' %}selected{% endif %}>Confirmed</option>
+                                                <option value="Shipped" {% if order.status == 'Shipped' %}selected{% endif %}>Shipped</option>
+                                                <option value="Delivered" {% if order.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                                                <option value="Cancelled" {% if order.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                                            </select>
+                                            <button type="submit" class="btn-save-sm">Save</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% endif %}
+
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div style="padding:50px; text-align:center; color:var(--ti-text-muted);">
+                <div style="font-size:2.5rem; opacity:0.3; margin-bottom:10px;">📦</div>
+                No orders received yet.
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="split-grid">
+        
+        <div class="dash-section" style="margin-bottom:0;">
+            <div class="section-header">
+                <h3 class="section-title">📂 Collections</h3>
+                <a href="{% url 'add_collection' store.id %}" class="btn-add">+ Add New</a>
+            </div>
+            {% if collections %}
+                <div class="table-responsive">
+                    <table class="ti-table">
+                        <tbody>
+                            {% for col in collections %}
+                            <tr>
+                                <td style="font-weight:700;">{{ col.name }}</td>
+                                <td style="text-align:right;">
+                                    <a href="{% url 'delete_collection' col.id %}" onclick="return confirm('Delete collection?')" class="action-link action-delete">Delete</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div style="padding:30px; text-align:center; color:var(--ti-text-muted); font-size:0.9rem;">
+                    No collections created.
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="dash-section" style="margin-bottom:0;">
+            <div class="section-header">
+                <h3 class="section-title">🎟️ Coupons</h3>
+                <a href="{% url 'manage_coupons' store.id %}" class="btn-add">Manage</a>
+            </div>
+            {% if coupons %}
+                <div class="table-responsive">
+                    <table class="ti-table">
+                        <tbody>
+                            {% for c in coupons %}
+                            <tr>
+                                <td style="font-family:monospace; font-weight:700;">{{ c.code }}</td>
+                                <td style="color:var(--ti-green); font-weight:700; font-size:0.85rem;">
+                                    {% if c.discount_type == 'PERCENT' %}{{ c.value }}% Off{% else %}Rs. {{ c.value }} Off{% endif %}
+                                </td>
+                                <td style="text-align:right;">
+                                    {% if c.active %}
+                                        <span class="badge st-active">ACTIVE</span>
+                                    {% else %}
+                                        <span class="badge st-inactive">INACTIVE</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div style="padding:30px; text-align:center; color:var(--ti-text-muted); font-size:0.9rem;">
+                    No active coupons.
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <div class="dash-section">
+        <div class="section-header">
+            <h3 class="section-title">📦 Inventory</h3>
+            <a href="{% url 'add_product_to_store' store.id %}" class="btn-add" style="background:var(--ti-navy); color:white; border:none;">
+                + Add Product
+            </a>
+        </div>
+        {% if products %}
+            <div class="table-responsive">
+                <table class="ti-table">
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Collection</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th style="text-align:right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in products %}
+                        <tr>
+                            <td>
+                                <div style="font-weight:700; color:var(--ti-navy);">{{ p.name }}</div>
+                                {% if not p.is_active %}
+                                    <span style="font-size:0.75rem; color:#64748b; font-weight:500;">(Hidden)</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if p.collection %}
+                                    <span style="background:#f1f5f9; padding:4px 8px; border-radius:6px; font-size:0.75rem; font-weight:600;">{{ p.collection.name }}</span>
+                                {% else %}
+                                    <span style="color:#cbd5e1;">—</span>
+                                {% endif %}
+                            </td>
+                            <td style="font-weight:700;">Rs. {{ p.price }}</td>
+                            <td>
+                                {% if p.get_real_stock > 0 %}
+                                    <span style="color:var(--ti-text); font-weight:600;">{{ p.get_real_stock }} units</span>
+                                {% else %}
+                                    <span class="badge st-cancelled">Out of Stock</span>
+                                {% endif %}
+                            </td>
+                            <td style="text-align:right;">
+                                <a href="{% url 'edit_product' p.id %}" class="action-link">Edit</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div style="padding:60px; text-align:center; color:var(--ti-text-muted);">
+                <div style="font-size:2rem; opacity:0.3; margin-bottom:10px;">🏷️</div>
+                No products added yet. Start selling today!
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const rows = document.querySelectorAll('.group-row');
+        
+        rows.forEach(row => {
+            const priceElements = row.querySelectorAll('.hidden-price');
+            let total = 0;
+            
+            priceElements.forEach(el => {
+                const val = parseFloat(el.getAttribute('data-price')) || 0;
+                total += val;
+            });
+            
+            const displayEl = row.querySelector('.row-total-display');
+            if(displayEl) {
+                // Rounding to avoid float errors
+                displayEl.innerText = "Rs. " + Math.round(total).toLocaleString();
+            }
+        });
+    });
+</script>
+
+{% endblock %}

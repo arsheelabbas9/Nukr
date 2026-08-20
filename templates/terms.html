@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Terms of Service | Nukڑ.{% endblock %}
+
+{% block content %}
+
+<style>
+    /* Reuse consistent legal styles */
+    .legal-hero {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 60px 20px;
+        text-align: center;
+        border-radius: 0 0 30px 30px;
+        margin-bottom: 50px;
+    }
+
+    .legal-container {
+        max-width: 900px;
+        margin: 0 auto 80px;
+        padding: 0 25px;
+    }
+
+    .legal-content {
+        background: white;
+        padding: 50px;
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        color: #334155;
+        font-size: 1rem;
+        line-height: 1.8;
+    }
+
+    .legal-content h2 {
+        color: var(--primary-color);
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin-top: 40px;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .legal-content h2:first-of-type {
+        margin-top: 0;
+    }
+
+    .legal-content h3 {
+        color: var(--text-main);
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-top: 25px;
+        margin-bottom: 10px;
+    }
+
+    .legal-content p {
+        margin-bottom: 15px;
+    }
+
+    .legal-content ul {
+        list-style-type: disc;
+        margin-left: 20px;
+        margin-bottom: 20px;
+        color: var(--text-light);
+    }
+
+    .legal-content li {
+        margin-bottom: 8px;
+    }
+
+    .warning-box {
+        background-color: #fff1f2;
+        border-left: 4px solid #e11d48;
+        padding: 20px;
+        margin: 25px 0;
+        border-radius: 0 8px 8px 0;
+        color: #9f1239;
+        font-size: 0.95rem;
+    }
+
+    .contact-box {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 30px;
+        border-radius: 12px;
+        text-align: center;
+        margin-top: 50px;
+    }
+    
+    .contact-box a {
+        color: #60a5fa;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+        .legal-content { padding: 25px; }
+    }
+</style>
+
+<div class="legal-hero">
+    <h1 style="font-size: 2.5rem; font-weight: 900; margin-bottom: 10px;">Terms of Service</h1>
+    <p style="opacity: 0.8; font-size: 1.1rem; max-width: 600px; margin: 0 auto;">
+        The rules of the marketplace. Please read these carefully before using Nukڑ.
+    </p>
+    <p style="margin-top: 20px; font-size: 0.9rem; font-weight: 600; background: rgba(255,255,255,0.1); display: inline-block; padding: 5px 15px; border-radius: 50px;">
+        Effective Date: January 1, 2026
+    </p>
+</div>
+
+<div class="legal-container">
+    <div class="legal-content">
+        
+        <p>
+            These Terms of Service ("Terms") govern your access to and use of the <strong>Nukr.store</strong> website, services, and applications (collectively, the "Service"). By accessing or using the Service, you agree to be bound by these Terms.
+        </p>
+
+        <h2>1. The Nukڑ Platform (Platform Nature)</h2>
+        <p>It is critical that you understand the nature of our service:</p>
+        <div class="warning-box">
+            <strong>Nukڑ is a Venue/Intermediary:</strong> We provide a platform for third-party sellers ("Vendors") to list items and for buyers to find them. Nukr is <strong>not</strong> the seller of the items listed. We do not own, store, inspect, or ship the items.
+        </div>
+        <p>Consequently, any contract for the sale of goods is strictly between the Seller and the Buyer. Nukڑ is not a party to this transaction and assumes no liability arising from it.</p>
+
+        <h2>2. Eligibility and Accounts</h2>
+        <h3>2.1. Age Requirement</h3>
+        <p>You must be at least 18 years old to use the Service. If you are under 18, you may only use Nukڑ under the supervision of a parent or legal guardian.</p>
+
+        <h3>2.2. Account Security</h3>
+        <p>You are responsible for maintaining the confidentiality of your account login credentials. You are fully responsible for all activities that occur under your account. You agree to immediately notify us of any unauthorized use of your account.</p>
+
+        <h3>2.3. Accurate Information</h3>
+        <p>When creating an account or a Store, you agree to provide accurate, current, and complete information. Providing false identity information or impersonating others is a violation of these Terms.</p>
+
+        <h2>3. Terms for Sellers (Store Owners)</h2>
+        <p>If you create a store on Nukڑ, you agree to the following:</p>
+        <ul>
+            <li><strong>Ownership:</strong> You certify that you have the legal right to sell every item you list.</li>
+            <li><strong>Accuracy:</strong> Your product descriptions and images must accurately reflect the quality and condition of the item.</li>
+            <li><strong>Prohibited Items:</strong> You may not list illegal items, drugs, weapons, counterfeit goods, or stolen property.</li>
+            <li><strong>Verification:</strong> The "Blue Tick" verification badge is a privilege, not a right. Nukr reserves the right to revoke verification if a seller engages in fraudulent activity.</li>
+            <li><strong>Fulfillment:</strong> You are solely responsible for fulfilling orders and communicating with buyers.</li>
+        </ul>
+
+        <h2>4. Terms for Buyers</h2>
+        <p>When using Nukڑ to find products, you agree to the following:</p>
+        <ul>
+            <li><strong>Risk Assumption:</strong> You acknowledge that you are buying from a third-party seller, not Nukڑ.</li>
+            <li><strong>Due Diligence:</strong> It is your responsibility to verify the item's condition before payment, especially during local meetups.</li>
+            <li><strong>Safety:</strong> We strongly advise meeting in safe, public locations for transactions. Nukڑ is not liable for any physical harm or financial loss resulting from offline interactions.</li>
+        </ul>
+
+        <h2>5. Content and Intellectual Property</h2>
+        <h3>5.1. User Content</h3>
+        <p>By posting content (such as store logos, product photos, and descriptions) to Nukڑ, you grant us a non-exclusive, worldwide, royalty-free license to use, display, and distribute that content in connection with operating and marketing the Service.</p>
+
+        <h3>5.2. Nukڑ IP</h3>
+        <p>The Nukڑ name, logo, design, and code are the intellectual property of Nukڑ. You may not use them without our prior written permission.</p>
+
+        <h2>6. Prohibited Activities</h2>
+        <p>You agree not to engage in any of the following activities:</p>
+        <ul>
+            <li>Using the Service for any illegal purpose or in violation of any local laws.</li>
+            <li>Posting false, misleading, or fraudulent content.</li>
+            <li>Harassing, threatening, or defaming other users.</li>
+            <li>Attempting to hack, scrape, or disrupt the Service's servers or networks.</li>
+            <li>Creating multiple accounts to evade bans or manipulate ratings.</li>
+        </ul>
+
+        <h2>7. Termination</h2>
+        <p>We may terminate or suspend your account and access to the Service immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms.</p>
+
+        <h2>8. Limitation of Liability</h2>
+        <p>To the maximum extent permitted by applicable law, Nukڑ shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly, or any loss of data, use, goodwill, or other intangible losses, resulting from:</p>
+        <ul>
+            <li>Your access to or use of or inability to access or use the Service;</li>
+            <li>Any conduct or content of any third party on the Service;</li>
+            <li>Any content obtained from the Service;</li>
+            <li>Unauthorized access, use, or alteration of your transmissions or content.</li>
+        </ul>
+
+        <h2>9. Governing Law</h2>
+        <p>These Terms shall be governed and construed in accordance with the laws of the Islamic Republic of Pakistan, without regard to its conflict of law provisions.</p>
+
+        <h2>10. Changes to Terms</h2>
+        <p>We reserve the right, at our sole discretion, to modify or replace these Terms at any time. By continuing to access or use our Service after those revisions become effective, you agree to be bound by the revised terms.</p>
+
+        <div class="contact-box">
+            <h3 style="color:white; margin-top:0;">Questions about the rules?</h3>
+            <p style="color: #cbd5e1; margin-bottom: 5px;">Team Nukڑ is here to clarify.</p>
+            <p>Email: <a href="mailto:support@nukr.store">support@nukr.store</a></p>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

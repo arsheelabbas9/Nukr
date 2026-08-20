@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Account Settings | Nukڑ.{% endblock %}
+
+{% block content %}
+
+<style>
+    /* --- SETTINGS PAGE STYLES --- */
+    .settings-container {
+        max-width: 850px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .settings-header {
+        margin-bottom: 30px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 20px;
+    }
+
+    .settings-card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+    }
+
+    .card-header {
+        background: #f8fafc;
+        padding: 20px 30px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .card-body {
+        padding: 40px;
+    }
+
+    /* Avatar Upload Section */
+    .avatar-upload-area {
+        display: flex;
+        align-items: center;
+        gap: 25px;
+        margin-bottom: 40px;
+        padding-bottom: 30px;
+        border-bottom: 1px dashed var(--border-color);
+    }
+
+    .avatar-preview {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #f1f5f9;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    .avatar-placeholder {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        font-weight: 700;
+        border: 4px solid #f1f5f9;
+    }
+
+    .file-input-label {
+        display: inline-block;
+        padding: 10px 20px;
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--text-main);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .file-input-label:hover {
+        background: #f8fafc;
+        border-color: var(--text-light);
+    }
+
+    /* Form Fields */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+        margin-bottom: 25px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--text-main);
+        margin-bottom: 8px;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        font-size: 1rem;
+        color: var(--text-main);
+        transition: border-color 0.2s, box-shadow 0.2s;
+        box-sizing: border-box; /* Ensures padding doesn't break width */
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .form-input:disabled {
+        background: #f8fafc;
+        color: var(--text-light);
+        cursor: not-allowed;
+    }
+
+    .form-hint {
+        font-size: 0.85rem;
+        color: var(--text-light);
+        margin-top: 6px;
+        line-height: 1.4;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .form-grid { grid-template-columns: 1fr; gap: 15px; }
+        .avatar-upload-area { flex-direction: column; text-align: center; }
+        .card-body { padding: 25px; }
+    }
+</style>
+
+<div class="settings-container">
+    
+    <div class="settings-header">
+        <h1 style="font-size: 2.2rem; font-weight: 900; color: var(--primary-color); margin: 0 0 10px 0;">Account Settings</h1>
+        <p style="color: var(--text-light); margin: 0; font-size: 1.05rem;">Manage your profile information and login security.</p>
+    </div>
+
+    <div class="settings-card">
+        
+        <div class="card-header">
+            <h3 style="margin: 0; font-size: 1.1rem; color: var(--primary-color); font-weight: 800;">Public Profile</h3>
+            <span style="font-size: 0.85rem; color: var(--success-text); background: var(--success-bg); padding: 4px 10px; border-radius: 20px; font-weight: 600;">Active Account</span>
+        </div>
+
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="avatar-upload-area">
+                    <div id="avatar-container">
+                        {% if user.userprofile.image %}
+                            <img src="{{ user.userprofile.image.url }}" class="avatar-preview" id="imagePreview" alt="Profile">
+                        {% elif user.socialaccount_set.all.0.get_avatar_url %}
+                            <img src="{{ user.socialaccount_set.all.0.get_avatar_url }}" class="avatar-preview" id="imagePreview" alt="Social Profile">
+                        {% else %}
+                            <div class="avatar-placeholder" id="placeholderPreview">
+                                {{ user.username|slice:":1"|upper }}
+                            </div>
+                            <img src="" class="avatar-preview" id="imagePreview" style="display: none;">
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <h4 style="margin: 0 0 5px 0; color: var(--text-main);">Profile Picture</h4>
+                        <p style="margin: 0 0 15px 0; font-size: 0.85rem; color: var(--text-light);">
+                            We support PNGs, JPEGs and GIFs under 2MB.
+                        </p>
+                        
+                        <input type="file" name="profile_image" id="id_profile_image" accept="image/*" style="display: none;" onchange="previewImage(this)">
+                        <label for="id_profile_image" class="file-input-label">
+                            Upload New Image
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div>
+                        <label class="form-label">First Name</label>
+                        <input type="text" name="first_name" value="{{ user.first_name }}" class="form-input" placeholder="e.g. Ali">
+                    </div>
+                    <div>
+                        <label class="form-label">Last Name</label>
+                        <input type="text" name="last_name" value="{{ user.last_name }}" class="form-input" placeholder="e.g. Khan">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" name="username" value="{{ user.username }}" class="form-input">
+                    <p class="form-hint">This is your unique handle on Nukڑ. It must be unique.</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" name="email" value="{{ user.email }}" class="form-input">
+                    <p class="form-hint">
+                        <span style="color: #ea580c; font-weight: 600;">Note:</span> Changing your email will send a verification link to the new address. Your account email won't update until you click that link.
+                    </p>
+                </div>
+
+                <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                    <div>
+                        <h4 style="margin: 0 0 5px 0; color: var(--text-main);">Reset Password?</h4>
+                        <a href="{% url 'account_reset_password' %}" style="color: var(--accent-color); font-weight: 600; font-size: 0.9rem; text-decoration: underline;">
+                            Click here
+                        </a>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="padding: 14px 40px; font-size: 1rem;">
+                        Save Changes
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function previewImage(input) {
+        const preview = document.getElementById('imagePreview');
+        const placeholder = document.getElementById('placeholderPreview');
+        
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                if (placeholder) {
+                    placeholder.style.display = 'none';
+                }
+            }
+            
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+
+{% endblock %}

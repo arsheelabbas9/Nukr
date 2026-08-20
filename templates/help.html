@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Help Center | Nukڑ.{% endblock %}
+
+{% block content %}
+
+<style>
+    /* Help Center Specific Styles */
+    .help-hero {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 60px 20px;
+        text-align: center;
+        border-radius: 0 0 30px 30px;
+        margin-bottom: 40px;
+    }
+
+    .help-container {
+        max-width: 900px;
+        margin: 0 auto 60px;
+        padding: 0 20px;
+    }
+
+    .help-section {
+        margin-bottom: 50px;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--primary-color);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 10px;
+    }
+
+    /* FAQ Cards */
+    .faq-grid {
+        display: grid;
+        gap: 20px;
+    }
+
+    .faq-card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 25px;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .faq-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        border-color: var(--accent-color);
+    }
+
+    .faq-question {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--text-main);
+        margin: 0 0 10px 0;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .faq-answer {
+        color: var(--text-light);
+        line-height: 1.6;
+        font-size: 0.95rem;
+        margin: 0;
+    }
+
+    /* GUI Highlights for explanation */
+    .gui-ref {
+        background-color: #f1f5f9;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: 600;
+        color: var(--primary-color);
+        border: 1px solid #cbd5e1;
+        font-size: 0.85rem;
+    }
+
+    .icon-ref {
+        color: var(--accent-color);
+    }
+</style>
+
+<div class="help-hero">
+    <h1 style="font-size: 2.5rem; font-weight: 900; margin-bottom: 10px;">How can we help?</h1>
+    <p style="opacity: 0.8; font-size: 1.1rem; max-width: 600px; margin: 0 auto;">
+        Master the marketplace. Learn how to buy locally, sell nationwide, and manage your Nukڑ account.
+    </p>
+</div>
+
+<div class="help-container">
+
+    <div class="help-section">
+        <h2 class="section-title"> Buying on Nukڑ</h2>
+        <div class="faq-grid">
+            
+            <div class="faq-card">
+                <h3 class="faq-question">How do I change my location?</h3>
+                <p class="faq-answer">
+                    Nukڑ  automatically shows products based on your city. To change this, click the <span class="gui-ref">City Name</span> button (e.g., "Lahore") located in the top navigation bar. Select your new city from the dropdown menu to see local inventory.
+                </p>
+            </div>
+
+            <div class="faq-card">
+                <h3 class="faq-question">How do I contact a seller?</h3>
+                <p class="faq-answer">
+                    We do not act as a middleman for messages. To contact a seller, click on their <strong>Store Card</strong> to view their full profile. Look for the <span class="gui-ref">Contact</span> section, where you will find their phone number, WhatsApp link, or email address to speak with them directly.
+                </p>
+            </div>
+
+            <div class="faq-card">
+                <h3 class="faq-question">What does the Blue Tick mean? <span class="icon-ref">✓</span></h3>
+                <p class="faq-answer">
+                    If you see a blue checkmark next to a store's name, it means the store is <strong>Verified</strong>. Nukڑ has reviewed their business credentials or identity to ensure they are a legitimate seller. We recommend prioritizing verified stores for higher safety.
+                </p>
+            </div>
+
+            <div class="faq-card">
+                <h3 class="faq-question">What does "Nationwide Delivery" mean?</h3>
+                <p class="faq-answer">
+                    On the store card, if you see a badge labeled <span class="gui-ref">PK Nationwide</span>, it means the seller can ship items to any city in Pakistan. If it says <span class="gui-ref">City Only</span>, they typically only offer local pickup or delivery within their specific city.
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="help-section">
+        <h2 class="section-title"> Selling on Nukڑ</h2>
+        <div class="faq-grid">
+            
+            <div class="faq-card">
+                <h3 class="faq-question">How do I create a store?</h3>
+                <p class="faq-answer">
+                    Creating a store is free. Ensure you are logged in, then click the blue <span class="gui-ref">Create Your Own Store</span> button in the top right corner of the navigation bar. Follow the simple 3-step wizard to name your store and list your location.
+                </p>
+            </div>
+
+            <div class="faq-card">
+                <h3 class="faq-question">How do I manage my products?</h3>
+                <p class="faq-answer">
+                    Once you have a store, a new dropdown menu called <span class="gui-ref">My Stores ▾</span> will appear in the navigation bar. Click it and select your store name to access your <strong>Store Dashboard</strong>. From there, you can add products, edit prices, and upload images.
+                </p>
+            </div>
+
+            <div class="faq-card">
+                <h3 class="faq-question">Can I have multiple stores?</h3>
+                <p class="faq-answer">
+                    Yes! You can manage multiple brands under one account. Simply go to the <span class="gui-ref">My Stores ▾</span> menu and click <span class="gui-ref">+ Create New Store</span>. You can switch between them instantly using the same menu.
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="help-section">
+        <h2 class="section-title"> Account & Safety</h2>
+        <div class="faq-grid">
+            
+            <div class="faq-card">
+                <h3 class="faq-question">I forgot my password. What do I do?</h3>
+                <p class="faq-answer">
+                    Go to the Login page and click the "Forgot Password" link. We will send a reset link to the email address associated with your account. If you signed up using Google, simply click "Continue with Google" to log back in.
+                </p>
+            </div>
+
+            <div class="faq-card">
+                <h3 class="faq-question">Is it safe to meet sellers?</h3>
+                <p class="faq-answer">
+                    For local pickups, your safety is priority. Always follow these rules:
+                    <br>1. Meet in a busy, public place (malls, petrol stations).
+                    <br>2. Never go to a seller's private home alone.
+                    <br>3. Inspect the item thoroughly before handing over cash.
+                    <br>4. If a deal sounds too good to be true, it probably is.
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <div style="background: #f8fafc; border: 1px dashed var(--border-color); padding: 30px; text-align: center; border-radius: 12px;">
+        <h3 style="margin-top: 0; color: var(--primary-color);">Still need support?</h3>
+        <p style="color: var(--text-light); margin-bottom: 20px;">Our team is available to assist you with technical issues or report suspicious activity.</p>
+        <a href="mailto:support@nukr.store" class="btn btn-primary" style="padding: 12px 30px;">Email Support</a>
+    </div>
+
+</div>
+
+{% endblock %}
